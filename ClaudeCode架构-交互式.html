@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 源码架构解析</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #1a1a1a;
+            --bg-card-hover: #222222;
+            --border: #2a2a2a;
+            --border-hover: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #d4a574;
+            --accent-hover: #e5b685;
+            --accent-muted: rgba(212, 165, 116, 0.1);
+            --green: #00ff88;
+            --green-muted: rgba(0, 255, 136, 0.1);
+            --blue: #5a9cf8;
+            --blue-muted: rgba(90, 156, 248, 0.1);
+            --purple: #a78bfa;
+            --purple-muted: rgba(167, 139, 250, 0.1);
+            --orange: #fb923c;
+            --orange-muted: rgba(251, 146, 60, 0.1);
+            --red: #f87171;
+            --red-muted: rgba(248, 113, 113, 0.1);
+            --yellow: #fbbf24;
+            --yellow-muted: rgba(251, 191, 36, 0.1);
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+
+        .header-logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .header-badge {
+            background: var(--accent-muted);
+            color: var(--accent);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .header-title {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 20px;
+            padding: 6px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mode-toggle:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+        }
+
+        .mode-toggle-icon {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+
+        .mode-toggle-text {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .mode-toggle:hover .mode-toggle-text {
+            color: var(--text-primary);
+        }
+
+        /* Tooltip / Hint System */
+        .hint {
+            position: relative;
+            border-bottom: 1px dashed var(--accent);
+            cursor: help;
+            transition: var(--transition);
+        }
+
+        .hint:hover {
+            border-bottom-color: var(--accent-hover);
+        }
+
+        .hint::after {
+            content: attr(data-hint);
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            width: 280px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-primary);
+            line-height: 1.6;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            text-align: left;
+        }
+
+        .hint:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* Hint arrow */
+        .hint::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--accent);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 1001;
+        }
+
+        .hint:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Simple mode styles */
+        body.simple-mode .hint-complex {
+            display: none;
+        }
+
+        body:not(.simple-mode) .hint-simple {
+            display: none;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            padding-top: 60px;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar-section {
+            padding: 0 16px;
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            padding: 0 8px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 2px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .sidebar-link:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .sidebar-link.active {
+            background: var(--accent-muted);
+            color: var(--accent);
+        }
+
+        .sidebar-icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+        }
+
+        .sidebar-link.active .sidebar-icon {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px 48px;
+            max-width: 1200px;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--green-muted);
+            color: var(--green);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 700px;
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 32px;
+        }
+
+        .stat {
+            text-align: left;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Module Sections */
+        .module {
+            margin-bottom: 64px;
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            cursor: pointer;
+        }
+
+        .module-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .module-icon.overview { background: var(--blue-muted); }
+        .module-icon.loop { background: var(--green-muted); }
+        .module-icon.tools { background: var(--purple-muted); }
+        .module-icon.memory { background: var(--orange-muted); }
+        .module-icon.agent { background: var(--red-muted); }
+        .module-icon.security { background: var(--yellow-muted); }
+        .module-icon.prompt { background: var(--accent-muted); }
+        .module-icon.repair { background: var(--green-muted); }
+        .module-icon.extension { background: var(--blue-muted); }
+        .module-icon.slash { background: var(--purple-muted); }
+        .module-icon.principle { background: var(--orange-muted); }
+
+        .module-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .module-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .module-arrow {
+            margin-left: auto;
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .module-header.expanded .module-arrow {
+            transform: rotate(90deg);
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .card-header:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-badge.high { background: var(--red-muted); color: var(--red); }
+        .card-badge.medium { background: var(--yellow-muted); color: var(--yellow); }
+        .card-badge.low { background: var(--green-muted); color: var(--green); }
+
+        .card-toggle {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .card.expanded .card-toggle {
+            transform: rotate(180deg);
+        }
+
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .card.expanded .card-content {
+            max-height: 2000px;
+        }
+
+        .card-body {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin: 12px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.7;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .code-block .comment { color: var(--text-muted); }
+        .code-block .keyword { color: var(--purple); }
+        .code-block .string { color: var(--green); }
+        .code-block .number { color: var(--orange); }
+        .code-block .type { color: var(--blue); }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--bg-primary);
+        }
+
+        tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        /* Flow Diagrams */
+        .flow {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin: 12px 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .flow .arrow { color: var(--accent); }
+        .flow .box { color: var(--text-primary); }
+        .flow .label { color: var(--purple); }
+        .flow .note { color: var(--text-muted); }
+
+        /* Lists */
+        .list {
+            list-style: none;
+            margin: 12px 0;
+        }
+
+        .list li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 14px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* Highlight Text */
+        .highlight {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .text-green { color: var(--green); }
+        .text-red { color: var(--red); }
+        .text-blue { color: var(--blue); }
+        .text-purple { color: var(--purple); }
+        .text-muted { color: var(--text-muted); }
+
+        /* Comparison Section */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .comparison-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .comparison-card-header {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-feature {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .comparison-feature:last-child {
+            border-bottom: none;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--accent-muted);
+            color: var(--accent);
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        /* Section Divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 32px 0;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            .main {
+                margin-left: 0;
+                padding: 24px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .module {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .module:nth-child(2) { animation-delay: 0.1s; }
+        .module:nth-child(3) { animation-delay: 0.2s; }
+        .module:nth-child(4) { animation-delay: 0.3s; }
+        .module:nth-child(5) { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <svg viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+                <path d="M10 16C10 12.686 12.686 10 16 10C19.314 10 22 12.686 22 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="16" cy="20" r="2" fill="currentColor"/>
+            </svg>
+            Claude Code
+        </div>
+        <span class="header-badge">Source Code Analysis</span>
+        <button class="mode-toggle" onclick="toggleMode()" title="切换通俗/专业模式">
+            <svg class="mode-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            <span class="mode-toggle-text" id="mode-text">通俗模式</span>
+        </button>
+        <span class="header-title">2026-03-31 Leaked Source</span>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Overview</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="#overview" class="sidebar-link active">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                            System Overview
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#loop" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 8v4l3 3"/>
+                            </svg>
+                            Core Loop
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#tools" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                            </svg>
+                            Tool System
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Intelligence</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="#memory" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+                                <path d="M20 12a8 8 0 0 0-8-8v8h8z"/>
+                            </svg>
+                            Memory
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#agent" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="7" r="4"/>
+                                <path d="M5.5 21a8.5 8.5 0 0 1 13 0"/>
+                            </svg>
+                            Multi-Agent
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#repair" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Self-Healing
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Security & Extension</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="#security" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            Security
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#prompt" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M7 7h10M7 12h10M7 17h6"/>
+                            </svg>
+                            Prompt System
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#extension" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="6" width="20" height="12" rx="2"/>
+                                <path d="M6 12h4M8 10v4M15 11h2M15 13h2"/>
+                            </svg>
+                            Extensions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Commands & Principles</div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="#slash" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 6h16M4 12h16M4 18h10"/>
+                            </svg>
+                            Slash Commands
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="#principle" class="sidebar-link">
+                            <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4M12 8h.01"/>
+                            </svg>
+                            Design Principles
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Hero -->
+            <section class="hero">
+                <div class="hero-badge">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    Based on 2026-03-31 Leaked Source
+                </div>
+                <h1>Claude Code Architecture</h1>
+                <p class="hero-desc">
+                    一份<span class="hint" data-hint="生产级指已在真实环境中经过大量用户验证、稳定可靠的系统">生产级</span> AI <span class="hint" data-hint="Agent = 智能体。能感知环境、自主决策、执行动作的程序。类似于'机器人'，但更强调智能决策能力">Agent</span> 工程实践的完整解析。基于泄露的 Claude Code 源码，
+                    深度剖析其架构设计、核心<span class="hint" data-hint="算法 = 完成某个任务的具体步骤和方法。例如'做蛋糕的食谱'就是算法">算法</span>、系统模块与工程哲学。
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-value">1,884</div>
+                        <div class="stat-label"><span class="hint" data-hint="TypeScript文件数。Claude Code是个大型项目">TypeScript Files</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">512K+</div>
+                        <div class="stat-label"><span class="hint" data-hint="代码行数。51万行代码，约等于《战争与和平》的20倍">Lines of Code</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">38+</div>
+                        <div class="stat-label"><span class="hint" data-hint="内置工具 = AI可以直接调用的能力，如读写文件、搜索代码、执行命令">Built-in Tools</span></div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100+</div>
+                        <div class="stat-label"><span class="hint" data-hint="斜杠命令 = 以/开头的快捷命令，如/commit、/diff">Slash Commands</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 1: System Overview -->
+            <section id="overview" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon overview">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">1. 系统架构总览</div>
+                        <div class="module-subtitle">技术栈、目录结构、核心数据流</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Tech Stack -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Core</span>
+                                技术栈
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Technology</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td>Runtime</td><td><span class="hint" data-hint="运行Bun = 类似Node.js的JavaScript运行时，但更快"><span class="highlight">Bun</span></span></td></tr>
+                                            <tr><td>Language</td><td><span class="hint" data-hint="TypeScript = 带类型的JavaScript，更安全可靠"><span class="highlight">TypeScript (strict)</span></span></td></tr>
+                                            <tr><td>Terminal UI</td><td><span class="hint" data-hint="React + Ink = 用React构建终端界面。Ink = 终端里的'React'">React + Ink</span></td></tr>
+                                            <tr><td>CLI Parsing</td><td><span class="hint" data-hint="Commander.js = 命令行参数解析库。帮你处理 --help, --version 这类参数">Commander.js</span></td></tr>
+                                            <tr><td>Schema Validation</td><td><span class="hint" data-hint="Zod = 类型验证库。确保配置/数据格式正确">Zod v4</span></td></tr>
+                                            <tr><td>Code Search</td><td><span class="hint" data-hint="ripgrep = 超快的代码搜索工具，比grep快10倍">ripgrep</span></td></tr>
+                                            <tr><td>Protocol</td><td><span class="hint" data-hint="MCP = 模型上下文协议。LSP = 编程语言服务器协议。两者让AI能'看见'更多东西">MCP SDK, LSP</span></td></tr>
+                                            <tr><td>API</td><td><span class="hint" data-hint="SDK = Software Development Kit。Anthropic SDK = 调用Claude API的工具包">Anthropic SDK</span></td></tr>
+                                            <tr><td>State Management</td><td><span class="hint" data-hint="状态管理 = 管理应用数据的方式。Zustand = React生态里轻量级的状态管理方案">Zustand (custom impl)</span></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Directory Structure -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Structure</span>
+                                目录结构 (~1,900 文件)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block"><span class="comment">src/
+├── main.tsx              </span><span class="comment"># CLI 入口 (~4,700行)</span>
+├── query.ts              <span class="comment"># 主查询循环 (~1,729行)</span>
+├── QueryEngine.ts        <span class="comment"># LLM 查询引擎 (~46K 行)</span>
+├── cloud.ts              <span class="comment"># API 客户端 (~3,600行)</span>
+├── tools.ts              <span class="comment"># 38+ 工具定义</span>
+├── Tool.ts               <span class="comment"># 工具类型定义</span>
+├── commands.ts           <span class="comment"># 100+ 命令</span>
+├── context.ts            <span class="comment"># 上下文收集</span>
+├── commands/             <span class="comment"># 斜杠命令实现</span>
+├── tools/                <span class="comment"># 工具实现</span>
+├── components/           <span class="comment"># Ink UI 组件 (~140 个)</span>
+├── services/
+│   ├── api/              <span class="comment"># Anthropic API 客户端</span>
+│   ├── mcp/              <span class="comment"># MCP 协议集成</span>
+│   ├── lsp/              <span class="comment"># LSP 协议集成</span>
+│   ├── compact/          <span class="comment"># 上下文压缩</span>
+│   └── SessionMemory/    <span class="comment"># 会话记忆</span>
+├── coordinator/          <span class="comment"># 多智能体协调器</span>
+├── plugins/              <span class="comment"># 插件系统</span>
+├── skills/               <span class="comment"># 技能系统</span>
+└── memdir/               <span class="comment"># 持久记忆系统</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Core Data Flow -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Flow</span>
+                                核心数据流
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow"><span class="label">用户输入</span> → main.tsx → REPL.tsx → <span class="highlight">QueryEngine.submitMessage()</span>
+                                    │
+                                    ├── fetchSystemPromptParts()
+                                    ├── buildEffectiveSystemPrompt()
+                                    │
+                                query() → <span class="box">queryLoop()</span>
+                                    │
+                    ┌───────────────────────────────────────────┐
+                    │  <span class="label">消息准备</span> → <span class="label">API调用</span> → <span class="label">工具执行</span>  │
+                    │       │                       │              │
+                    │  <span class="label">后处理</span> → needsFollowUp?                     │
+                    └───────────────────────────────────────────┘
+                                    │
+                            结果返回 → UI 渲染
+                                    │
+                    extractMemories() + sessionMemory()</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Startup Process -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Init</span>
+                                启动流程
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <ol class="list">
+                                    <li><span class="highlight">并行预取</span>: MDM配置、Keychain OAuth、API预连接</li>
+                                    <li><span class="highlight">初始化</span>: 配置验证、CA证书、优雅关闭、事件日志、LSP服务器、遥测</li>
+                                    <li><span class="highlight">功能特性加载</span>: 20+ feature flags (PROACTIVE、KAIROS、COORDINATOR_MODE等)</li>
+                                </ol>
+                                <div class="tag">PROACTIVE</div>
+                                <div class="tag">KAIROS</div>
+                                <div class="tag">COORDINATOR_MODE</div>
+                                <div class="tag">FORK_SUBAGENT</div>
+                                <div class="tag">TOKEN_BUDGET</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 2: Core Loop -->
+            <section id="loop" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon loop">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="9"/>
+                            <path d="M12 8v4l3 3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">2. 核心循环 - <span class="hint" data-hint="ReAct = Reasoning + Action。一种让AI思考(Reasoning)后执行动作(Action)，并观察结果(Observation)来学习的模式。类似人类解决问题的方式：想一想 → 做一做 → 看结果">ReAct</span> 模式</div>
+                        <div class="module-subtitle">五阶段执行流程、7层恢复机制、消息准备管道</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Five Stages -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Core</span>
+                                五阶段执行流程
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">┌──────────────────────────────────────────────────────────┐
+│  <span class="label">第一阶段：上下文准备</span>
+│  - 裁剪旧消息  - 微压缩缓存结果  - 触发全量摘要
+└──────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────┐
+│  <span class="label">第二阶段：模型流式调用</span>
+│  - 打包对话历史 + 系统提示 + 工具列表
+│  - 流式输出：边生成边回传
+│  - 实时收集：文本回复 + 工具调用意图
+└──────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────┐
+│  <span class="label">第三阶段：工具执行</span>
+│  - 流式执行器：模型输出时就开始并行执行
+│  - 批量执行器：所有调用确定后统一执行
+│  - 权限检查 + Hook 钩子拦截
+└──────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────┐
+│  <span class="label">第四阶段：附件收集</span>
+│  - 任务通知  - 记忆内容  - 文件变更记录
+└──────────────────────────────────────────────────────────┘
+                            ↓
+┌──────────────────────────────────────────────────────────┐
+│  <span class="label">第五阶段：终止或继续</span>
+│  - 无工具调用 → 任务完成
+│  - 有工具调用 → 反馈结果，继续循环
+│  - 413 错误 → 响应式压缩 + 重试
+│  - 输出截断 → 自动升级 Token 上限 (8K→64K)
+└──────────────────────────────────────────────────────────┘</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7 Layer Recovery -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Resilience</span>
+                                7 层恢复机制
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Layer</th>
+                                                <th>Mechanism</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-green">1</td><td><span class="hint" data-hint="指数退避 = 失败后等更长时间再试。如1秒→2秒→4秒→8秒...">API 级指数退避重试</span></td><td>网络抖动、API 过载</td></tr>
+                                            <tr><td class="text-green">2</td><td><span class="hint" data-hint="529 = Anthropic服务器过载专用错误码">529 过载处理</span></td><td>Anthropic 专用错误码</td></tr>
+                                            <tr><td class="text-green">3</td><td><span class="hint" data-hint="Token = AI处理的文字单位。如'my name is'是4个token">输出 Token 恢复</span></td><td>截断后自动扩容</td></tr>
+                                            <tr><td class="text-yellow">4</td><td><span class="hint" data-hint="响应式压缩 = 上下文满了自动总结提炼">响应式压缩</span></td><td>上下文溢出时紧急压缩</td></tr>
+                                            <tr><td class="text-yellow">5</td><td><span class="hint" data-hint="上下文排空 = 分批次处理">上下文排空</span></td><td>分批处理过长上下文</td></tr>
+                                            <tr><td class="text-blue">6</td><td><span class="hint" data-hint="Fallback = 回退。当主模型不可用时用备用模型">模型 Fallback</span></td><td>降级到其他模型</td></tr>
+                                            <tr><td class="text-blue">7</td><td><span class="hint" data-hint="无人值守 = 即使你离开电脑，系统也会继续重试">无人值守持久重试</span></td><td>最大退避 5 分钟，6 小时重置</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="text-muted" style="margin-top: 12px; font-size: 13px;">
+                                    最大退避 5 分钟，重置上线 6 小时 — 真正考虑长时间运行场景的设计
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message Pipeline -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Pipeline</span>
+                                消息准备管道
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">原始消息
+    │
+    ↓
+applyToolResultBudget()    <span class="note">(结果大小限制)</span>
+    │
+    ↓
+snipCompact()              <span class="note">(片段压缩)</span>
+    │
+    ↓
+microCompact()             <span class="note">(微压缩)</span>
+    │
+    ↓
+contextCollapse()          <span class="note">(上下文折叠)</span>
+    │
+    ↓
+autoCompact()              <span class="note">(自动压缩)</span>
+    │
+    ↓
+normalizeMessagesForAPI()  <span class="note">(API格式标准化)</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Continue Sites -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Flow</span>
+                                7 个 Continue 站点
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Site</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td><code>collapse_drain_retry</code></td><td>上下文折叠排空后重试</td></tr>
+                                            <tr><td><code>reactive_compact_retry</code></td><td>反应式压缩后重试</td></tr>
+                                            <tr><td><code>max_output_tokens_escalate</code></td><td>输出token升级后重试</td></tr>
+                                            <tr><td><code>max_output_tokens_recovery</code></td><td>输出token恢复后重试</td></tr>
+                                            <tr><td><code>stop_hook_blocking</code></td><td>Stop Hook阻塞后重试</td></tr>
+                                            <tr><td><code>token_budget_continuation</code></td><td>Token Budget续费后继续</td></tr>
+                                            <tr><td><code>(normal)</code></td><td>正常工具执行后下一轮</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 3: Tool System -->
+            <section id="tools" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon tools">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">3. 工具系统</div>
+                        <div class="module-subtitle">38+ <span class="hint" data-hint="工具 = AI可以调用的函数/命令。就像人有手可以做事，AI有工具可以操作文件、执行命令等">工具</span>、分类执行模型、<span class="hint" data-hint="投机执行 = 在用户确认之前就开始执行。就像服务员在你点完菜后，后厨就开始做了，不用等你确认">投机执行</span></div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Tool List -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Core</span>
+                                内置工具列表 (~38个)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="comparison-grid">
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">Read Type (Parallel)</div>
+                                        <div class="comparison-feature"><span>Read</span><span>文件读取</span></div>
+                                        <div class="comparison-feature"><span>Glob</span><span><span class="hint" data-hint="Glob = 用通配符(如*.js)匹配文件名的工具">模式匹配</span></span></div>
+                                        <div class="comparison-feature"><span>Grep</span><span><span class="hint" data-hint="Grep = 在文件中搜索文本的工具">内容搜索</span></span></div>
+                                        <div class="comparison-feature"><span>WebFetch</span><span>URL抓取</span></div>
+                                        <div class="comparison-feature"><span>WebSearch</span><span>网页搜索</span></div>
+                                        <div class="comparison-feature"><span>LSP</span><span><span class="hint" data-hint="LSP = 让AI知道代码结构(函数、变量在哪)，实现跳转和补全">语言服务器</span></span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">Write Type (Serial)</div>
+                                        <div class="comparison-feature"><span>Write</span><span>文件写入</span></div>
+                                        <div class="comparison-feature"><span>Edit</span><span>文件编辑</span></div>
+                                        <div class="comparison-feature"><span>Bash</span><span><span class="hint" data-hint="Bash = 命令行Shell。执行终端命令(如ls, git)的工具">Shell命令</span></span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">Special</div>
+                                        <div class="comparison-feature"><span>Agent</span><span><span class="hint" data-hint="Agent = 创建一个子AI来完成特定任务">子智能体</span></span></div>
+                                        <div class="comparison-feature"><span>TaskCreate</span><span><span class="hint" data-hint="Task = 创建待办任务，类似todo list">任务创建</span></span></div>
+                                        <div class="comparison-feature"><span>AskUserQuestion</span><span><span class="hint" data-hint="向用户提问并等待回答，常用于需要用户确认的场景">提问</span></span></div>
+                                        <div class="comparison-feature"><span>EnterPlanMode</span><span><span class="hint" data-hint="Plan Mode = 规划模式。先制定计划再执行，类似'先想清楚再动手'">规划模式</span></span></div>
+                                        <div class="comparison-feature"><span>SendMessage</span><span><span class="hint" data-hint="多个AI之间相互通信的工具">智能体消息</span></span></div>
+                                        <div class="comparison-feature"><span>Skill</span><span><span class="hint" data-hint="Skill = 预定义的技能模块，可复用">技能执行</span></span></div>
+                                        <div class="comparison-feature"><span>ToolSearch</span><span><span class="hint" data-hint="工具太多时，让AI先搜索发现可用工具">工具搜索</span></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Execution Model -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Model</span>
+                                工具分类执行模型
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">读取型工具 (Read, Grep, Glob) → <span class="highlight">并行执行</span>, <span class="highlight">最多 10 并发</span>
+写入型工具 (Edit, Write, Bash) → <span class="highlight">串行执行</span>, <span class="highlight">一次一个</span>
+
+<span class="note">// 状态流转</span>
+'queued' → 'executing' → 'completed' → 'yielded'</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Speculative Execution -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Advanced</span>
+                                投机执行机制 (Speculative Execution)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">用户确认当前操作 ──────────────────→ <span class="highlight">执行</span>
+      ↑
+      │ <span class="note">流水线化</span>
+      │
+确认前就开始预执行 <span class="label">(Copy-on-Write Overlay 文件系统)</span></div>
+                                <ul class="list">
+                                    <li>写操作先写入临时覆盖层</li>
+                                    <li>确认后复制回真实文件系统</li>
+                                    <li>拒绝后直接删除覆盖层</li>
+                                    <li>在确认当前建议时，下一条已经开始预执行</li>
+                                </ul>
+                                <p class="text-muted" style="margin-top: 12px; font-size: 13px;">
+                                    像 CPU 指令流水线一样，极大隐藏等待延迟
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool Prompt Design -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Design</span>
+                                工具 Prompt 设计模式
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <p>每个工具都有完整的描述 Prompt，包含:</p>
+                                <ul class="list">
+                                    <li><span class="highlight">描述</span>: 工具用途</li>
+                                    <li><span class="highlight">使用限制</span>: 何时使用/何时避免使用</li>
+                                    <li><span class="highlight">参数说明</span>: 各参数含义</li>
+                                    <li><span class="highlight">示例</span>: 最佳实践</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 4: Memory -->
+            <section id="memory" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon memory">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2a10 10 0 1 0 10 10H12V2z"/>
+                            <path d="M20 12a8 8 0 0 0-8-8v8h8z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">4. 上下文压缩与记忆</div>
+                        <div class="module-subtitle"><span class="hint" data-hint="上下文 = AI一次能处理的所有信息。压缩 = 当信息太多时，AI会自动总结提炼，保留最重要的部分">上下文压缩</span>、五层记忆体系</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Compression Levels -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Context</span>
+                                四级上下文压缩体系
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Level</th>
+                                                <th>Name</th>
+                                                <th>Trigger</th>
+                                                <th>Strategy</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-green">1</td><td>Snip</td><td>每轮调用前</td><td>轻量裁剪旧消息头尾</td></tr>
+                                            <tr><td class="text-yellow">2</td><td>Micro Compact</td><td>Token 占用高</td><td>缓存感知 / 基于时间 / API级压缩</td></tr>
+                                            <tr><td class="text-orange">3</td><td>Auto Compact</td><td>超过阈值</td><td>AI 全量摘要，浓缩成结构化摘要</td></tr>
+                                            <tr><td class="text-red">4</td><td>Reactive Compact</td><td>413 错误</td><td>紧急压缩 + 重试</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="code-block" style="margin-top: 16px;"><span class="keyword">const</span> AUTOCOMPACT_BUFFER_TOKENS = <span class="number">13,000</span>
+<span class="keyword">const</span> WARNING_THRESHOLD_BUFFER_TOKENS = <span class="number">20,000</span>
+<span class="keyword">const</span> MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES = <span class="number">3</span>  <span class="comment">// 熔断器</span></div>
+                                <p class="text-muted" style="margin-top: 12px; font-size: 13px;">
+                                    压缩后不是暴力丢弃，而是智能恢复优先级（最近读取文件 > plan 文件 > 已调用技能）
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5 Layer Memory -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Memory</span>
+                                五层记忆体系
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">┌─────────────────────────────────────────────────────────┐
+│  <span class="label">短期记忆</span>：当前会话消息列表 (内存)                │
+├─────────────────────────────────────────────────────────┤
+│  <span class="label">工作记忆</span>：7种任务状态 + 投机执行状态 + 技能跟踪  │
+├─────────────────────────────────────────────────────────┤
+│  <span class="label">长期记忆</span>：三层架构                               │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │ memory.md (索引文件)                              │   │
+│  │   ├── user 类型 (用户角色偏好)                    │   │
+│  │   ├── feedback 类型 (用户纠正反馈)               │   │
+│  │   ├── project 类型 (进行中工作约束)              │   │
+│  │   └── reference 类型 (外部系统引用)              │   │
+│  └─────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────┤
+│  <span class="label">摘要记忆</span>：四级压缩体系                          │
+├─────────────────────────────────────────────────────────┤
+│  <span class="label">Checkpoint</span>：会话持久化和恢复                      │
+└─────────────────────────────────────────────────────────┘</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Memory Types -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Types</span>
+                                四种记忆类型
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Description</th>
+                                                <th>Content</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td><span class="text-blue"><span class="hint" data-hint="user记忆 = 记住用户的身份、喜好、工作方式。例如'这个用户喜欢简洁的代码注释'">user</span></span></td><td>用户角色、目标、偏好</td><td>角色、偏好、协作方式</td></tr>
+                                            <tr><td><span class="text-green"><span class="hint" data-hint="feedback记忆 = 记住用户给过的纠正。例如'用户纠正过一次说不要用echo，应用printf'">feedback</span></span></td><td>用户反馈指导</td><td>规则偏好、避免重复的错误</td></tr>
+                                            <tr><td><span class="text-purple"><span class="hint" data-hint="project记忆 = 记住项目上下文。例如'这个项目是React前端，用TypeScript'">project</span></span></td><td>项目状态、目标</td><td>谁在做什么、为什么、截止时间</td></tr>
+                                            <tr><td><span class="text-orange"><span class="hint" data-hint="reference记忆 = 记住外部资源位置。例如'bug tracker在Linear的INGEST项目里'">reference</span></span></td><td>外部系统指针</td><td>URL、位置、如何找到信息</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="code-block" style="margin-top: 16px;"><span class="comment">// 记忆文件结构</span>
+<span class="type">---</span>
+name: {{memory name}}
+description: {{one-line description}}
+type: {{user, feedback, project, reference}}
+<span class="type">---</span>
+
+{{memory content}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 5: Multi-Agent -->
+            <section id="agent" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon agent">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="7" r="4"/>
+                            <path d="M5.5 21a8.5 8.5 0 0 1 13 0"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">5. <span class="hint" data-hint="多智能体 = 多个AI协作工作。就像一个团队，有队长分配任务，队员执行，合力完成复杂工作">多智能体</span>系统</div>
+                        <div class="module-subtitle">内置智能体类型、三种执行模型、<span class="hint" data-hint="Coordinator = 协调者。负责任务分解、分配给其他AI、汇总结果。类似项目经理">Coordinator</span> 模式</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Agent Types -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Core</span>
+                                内置智能体类型
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="comparison-grid">
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">general-purpose (通用)</div>
+                                        <p class="text-muted" style="font-size: 12px;">Complete the task fully—don't gold-plate, but don't leave it half-done.</p>
+                                        <div class="comparison-feature"><span>Tools</span><span>全部可用</span></div>
+                                        <div class="comparison-feature"><span>Model</span><span>inherit</span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">Explore (代码探索)</div>
+                                        <p class="text-muted" style="font-size: 12px;">=== CRITICAL: READ-ONLY MODE - NO FILE MODIFICATIONS ===</p>
+                                        <div class="comparison-feature"><span>Tools</span><span>只读 (禁用 Agent, Edit, Write)</span></div>
+                                        <div class="comparison-feature"><span>Model</span><span>外部→Haiku, 内部→inherit</span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">Plan (架构规划)</div>
+                                        <p class="text-muted" style="font-size: 12px;">=== CRITICAL: READ-ONLY MODE ===</p>
+                                        <div class="comparison-feature"><span>Tools</span><span>只读</span></div>
+                                        <div class="comparison-feature"><span>Output</span><span>结尾包含 ### Critical Files</span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">verification (验证)</div>
+                                        <p class="text-muted" style="font-size: 12px;">Your job is not to confirm the implementation works—it's to try to break it.</p>
+                                        <div class="comparison-feature"><span>Tools</span><span>只读</span></div>
+                                        <div class="comparison-feature"><span>Goal</span><span>对抗性验证</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Execution Models -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Model</span>
+                                三种执行模型
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Model</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td><span class="highlight">Fork Agent</span></td><td>子 agent 继承父 agent 完整上下文，独立分支执行</td></tr>
+                                            <tr><td><span class="highlight">In-process Teammate</span></td><td>同进程内异步执行，用 async local storage 隔离</td></tr>
+                                            <tr><td><span class="highlight">Split-pane Teammate</span></td><td>在 tmux/iTerm2 里开分窗格</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coordinator -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Advanced</span>
+                                Coordinator 模式
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <p>Coordinator 角色: 指导 workers 进行 research/implement/verify</p>
+                                <ul class="list">
+                                    <li><code>Agent tool</code>: 生成异步 workers</li>
+                                    <li><code>SendMessage tool</code>: 继续现有 workers</li>
+                                    <li><code>TaskStop tool</code>: 取消 workers</li>
+                                    <li>Worker 结果: 以 <code>&lt;task-notification&gt;</code> XML 到达</li>
+                                </ul>
+                                <div class="flow" style="margin-top: 16px;"><span class="highlight">工作流</span>: Research → Synthesis → Implementation → Verification</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fork Details -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Implementation</span>
+                                Fork 子智能体实现
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block"><span class="comment">// Fork 继承父智能体完整上下文，共享 prompt cache
+// 构建方式:
+// 1. 复制父消息历史
+// 2. 用字节相同的占位文本替换 tool_result (保持缓存键一致)
+</span>
+<span class="comment">// 3. 添加 per-child 指令文本块</span>
+
+<span class="comment">// 优势: 极低成本 (缓存命中率极高)
+// 限制: 不能指定不同的模型</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 6: Security -->
+            <section id="security" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon security">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">6. 安全纵深防御</div>
+                        <div class="module-subtitle">权限决策管道、20项安全检查、<span class="hint" data-hint="Hook = 钩子。允许在特定时刻插入自定义逻辑，类似'在执行前/后自动触发'的机制">Hook</span> 系统</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Permission Pipeline -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Core</span>
+                                权限决策管道
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">工具调用请求
+        ↓
+<span class="label">Step 1</span>: 规则检查 (hasPermissionsToUseToolInner)
+        ↓
+<span class="label">Step 2</span>: 模式转换 (dontAsk/auto/plan)
+        ↓
+<span class="label">Step 3</span>: 分类器 (如果需要)
+        ├── 安全允许列表 → 跳过分类器
+        └── 两阶段 XML 分类器:
+            ├── <span class="text-green">Stage 1 (fast)</span>: max_tokens=64, instant yes/no
+            └── <span class="text-yellow">Stage 2 (thinking)</span>: max_tokens=4096, chain-of-thought
+        ↓
+<span class="label">Step 4</span>: 交互处理 (如果 behavior === 'ask')</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 20 Security Checks -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Bash</span>
+                                Bash Tool 20 项安全检查
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Checks</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td><span class="hint" data-hint="防止不完整的命令被执行，如'git commit -m \"fix' 少了引号">命令完整性</span></td><td>不完整命令检测</td></tr>
+                                            <tr><td rowspan="4"><span class="hint" data-hint="注入攻击 = 在命令中插入恶意代码。如用户在输入里放'; rm -rf'">注入攻击</span></td><td><span class="hint" data-hint="JQ函数注入 = 恶意构造的JSON数据">JQ 函数注入</span></td></tr>
+                                            <tr><td><span class="hint" data-hint="IFS注入 = 利用shell变量">IFS 注入</span></td></tr>
+                                            <tr><td><span class="hint" data-hint="Token注入 = 伪造身份">Token 注入</span></td></tr>
+                                            <tr><td><span class="hint" data-hint="Unicode伪装 = 用相似字符冒充">Unicode 伪装</span></td></tr>
+                                            <tr><td rowspan="3"><span class="hint" data-hint="危险字符 = 可能被利用的特殊字符">危险字符</span></td><td><span class="hint" data-hint="SH元字符 = $, *, ? 等有特殊含义的字符">SH 元字符嵌入</span></td></tr>
+                                            <tr><td><span class="hint" data-hint="换行攻击 = 用换行符注入新命令">换行攻击</span></td></tr>
+                                            <tr><td><span class="hint" data-hint="命令替换 = $(cmd) 或 `cmd` 形式">命令替换模式</span></td></tr>
+                                            <tr><td><span class="hint" data-hint="解释器黑名单 = 默认禁止调用Python/Node等解释器，防止恶意脚本执行">解释器黑名单</span></td><td>Python、Node、Ruby、Perl、PHP 默认禁止自动执行</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hook System -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Extensible</span>
+                                Hook 系统 (24 种事件)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Event</th>
+                                                <th>Timing</th>
+                                                <th>Usage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td><span class="hint" data-hint="PreToolUse = 在工具执行前触发。可用来修改参数或阻止执行">PreToolUse</span></td><td>工具执行前</td><td>修改输入、阻止执行</td></tr>
+                                            <tr><td><span class="hint" data-hint="PostToolUse = 在工具执行后触发。可用来修改结果或记录日志">PostToolUse</span></td><td>工具执行后</td><td>修改输出</td></tr>
+                                            <tr><td><span class="hint" data-hint="PostToolUseFailure = 工具执行出错时触发">PostToolUseFailure</span></td><td>工具错误后</td><td>错误处理</td></tr>
+                                            <tr><td><span class="hint" data-hint="PreCompact = 上下文压缩前触发">PreCompact</span></td><td>压缩前</td><td>准备压缩</td></tr>
+                                            <tr><td><span class="hint" data-hint="PostCompact = 上下文压缩后触发">PostCompact</span></td><td>压缩后</td><td>后处理</td></tr>
+                                            <tr><td><span class="hint" data-hint="SessionStart/End = 会话开始或结束时触发">SessionStart/End</span></td><td>会话开始/结束</td><td>初始化/清理</td></tr>
+                                            <tr><td><span class="hint" data-hint="Stop = 当模型停止生成时触发">Stop</span></td><td>模型停止时</td><td>停止钩子</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="text-muted" style="margin-top: 12px; font-size: 13px;">
+                                    企业用户可以在不修改源码的情况下深度定制行为
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Three Layer Defense -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Architecture</span>
+                                三层防御架构
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">输入验证 → 8来源权限规则匹配 → 二阶段分类器
+    ↓
+文件系统边界锁定 → 路径遍历保护 → 危险文件保护列表
+    ↓
+Shell 安全检查 → 解释器黑名单 → Docker 沙箱隔离</div>
+                                <p class="text-muted" style="margin-top: 12px; font-size: 13px;">
+                                    不信任任何东西，层层验证 — 这是被真实安全事件教训后才有的设计
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 7: Prompt System -->
+            <section id="prompt" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon prompt">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M7 7h10M7 12h10M7 17h6"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">7. <span class="hint" data-hint="Prompt = 给AI的指令/提示。就像跟人说话时的'开场白'，决定了AI如何理解和回应">Prompt</span> 系统</div>
+                        <div class="module-subtitle">组装结构、优先级体系、<span class="hint" data-hint="缓存 = 存储计算结果以备复用，省时省力。就像把常用文件放桌面，不用每次都去文件夹找">缓存</span>优化</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Assembly Structure -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Core</span>
+                                Prompt 组装结构
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block"><span class="keyword">return</span> [
+  <span class="comment">// 静态内容 (可跨用户/组织缓存)</span>
+  getSimpleIntroSection(),           <span class="comment">// 身份与安全指令</span>
+  getSimpleSystemSection(),          <span class="comment">// 系统规则</span>
+  getSimpleDoingTasksSection(),      <span class="comment">// 任务执行指南</span>
+  getActionsSection(),               <span class="comment">// 安全操作指南</span>
+  getUsingYourToolsSection(),        <span class="comment">// 工具使用指南</span>
+  getSimpleToneAndStyleSection(),    <span class="comment">// 语气风格</span>
+  getOutputEfficiencySection(),      <span class="comment">// 输出效率</span>
+
+  SYSTEM_PROMPT_DYNAMIC_BOUNDARY,    <span class="comment">// 缓存分界线</span>
+
+  <span class="comment">// 动态内容 (每个会话/用户不同)</span>
+  getSessionSpecificGuidanceSection(),
+  loadMemoryPrompt(),
+  getAntModelOverrideSection(),
+  computeSimpleEnvInfo(),
+  getLanguageSection(),
+  getOutputStyleSection(),
+  getMcpInstructionsSection(),
+  getScratchpadInstructions(),
+  getFunctionResultClearingSection(),
+  SUMMARIZE_TOOL_RESULTS_SECTION,
+]</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Priority -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">System</span>
+                                Prompt 优先级 (6 级)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow"><span class="highlight">override</span> > cornnet > agent > custom > 默认 > append</div>
+                                <div class="table-wrapper" style="margin-top: 16px;">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Priority</th>
+                                                <th>Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-red">1 (Highest)</td><td>Override system prompt</td></tr>
+                                            <tr><td class="text-orange">2</td><td>Coordinator system prompt</td></tr>
+                                            <tr><td class="text-yellow">3</td><td>Agent system prompt</td></tr>
+                                            <tr><td class="text-green">4</td><td>Custom system prompt (--system-prompt)</td></tr>
+                                            <tr><td class="text-blue">5</td><td>Default system prompt</td></tr>
+                                            <tr><td class="text-purple">6 (Lowest)</td><td>Append</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cache Optimization -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge low">Optimization</span>
+                                缓存优化策略
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">┌──────────────────────────────────────┬───────────────────────────────┐
+│  <span class="highlight">静态部分 (可缓存)</span>                  │ <span class="highlight">动态部分 (每次不同)</span>       │
+├──────────────────────────────────────┼───────────────────────────────┤
+│  - 身份声明                           │  - 记忆内容                   │
+│  - 工具使用指南                       │  - MCP 指令                   │
+│  - 编码哲学                           │  - 环境信息                   │
+├──────────────────────────────────────┴───────────────────────────────┤
+│          ↑ <span class="highlight">DYNAMIC_BOUNDARY</span> 标记                                   │
+└──────────────────────────────────────────────────────────────────────┘</div>
+                                <p class="text-muted" style="margin-top: 12px; font-size: 13px;">
+                                    Anthropic API 有提示缓存机制，缓存命中可大幅降低成本。精确切割静态/动态内容，最大化缓存命中率
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 8: Self-Healing -->
+            <section id="repair" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon repair">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">8. 自修复机制</div>
+                        <div class="module-subtitle">反馈循环、四层错误恢复、重试机制</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Core Principle -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Core</span>
+                                核心原理
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="flow">Claude 生成 tool_use
+        ↓
+工具执行 (成功或失败)
+        ↓
+tool_result 返回 (含 is_error 标志)
+        ↓
+Claude 在下一轮看到错误信息
+        ↓
+分析原因 → 尝试新策略
+        ↓
+再次调用工具 → 循环继续</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Design -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Design</span>
+                                关键设计：is_error 标志
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <p>错误和成功使用完全相同的消息格式，唯一区别是 <code class="highlight">is_error: true</code></p>
+                                <div class="code-block" style="margin-top: 12px;"><span class="comment">// 成功</span>
+{ type:<span class="string">'tool_result'</span>, tool_use_id:<span class="string">'call_abc'</span>, content:<span class="string">'...'</span>, is_error:<span class="keyword">false</span> }
+
+<span class="comment">// 失败</span>
+{ type:<span class="string">'tool_result'</span>, tool_use_id:<span class="string">'call_abc'</span>, content:<span class="string">'Error: File not found'</span>, is_error:<span class="keyword">true</span> }</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4 Layer Recovery -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Strategy</span>
+                                四层错误恢复策略
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Layer</th>
+                                                <th>Error Type</th>
+                                                <th>Recovery Strategy</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="text-red">1</td><td><span class="hint" data-hint="PTL = Prompt Too Long。上下文太长了AI处理不了">PTL (Prompt Too Long)</span></td><td>上下文折叠 → 反应式压缩 → 用户报告</td></tr>
+                                            <tr><td class="text-orange">2</td><td><span class="hint" data-hint="Token超限 = AI输出被打断，没说完">输出 Token 超限</span></td><td>升级到 64K → 恢复消息 → 最多3次</td></tr>
+                                            <tr><td class="text-yellow">3</td><td><span class="hint" data-hint="529 = Anthropic服务器过载的错误码">模型过载 (529)</span></td><td>切换 fallbackModel → 重试</td></tr>
+                                            <tr><td class="text-green">4</td><td><span class="hint" data-hint="工具执行错误 = 如文件不存在、权限不足">工具执行错误</span></td><td>错误反馈 → Claude 分析 → 调整策略</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Retry Mechanism -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Implementation</span>
+                                重试机制 (withRetry)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block"><span class="comment">// 错误处理</span>
+<span class="text-red">401/403</span> → 刷新凭证 → 重试
+<span class="text-orange">429</span>     → 短延迟用fast mode, 长延迟切换速度
+<span class="text-yellow">529</span>     → 指数退避, 连续3次触发模型回退
+<span class="text-green">PTL</span>     → 计算可用token → 调整maxTokens → 重试
+<span class="text-blue">ECONNRESET</span> → 禁用keep-alive → 重试</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 9: Extensions -->
+            <section id="extension" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon extension">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="6" width="20" height="12" rx="2"/>
+                            <path d="M6 12h4M8 10v4M15 11h2M15 13h2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">9. 扩展子系统</div>
+                        <div class="module-subtitle"><span class="hint" data-hint="MCP (Model Context Protocol) = 让AI连接外部工具/数据的协议。就像'转接头'，让AI能接入各种外部系统">MCP</span>、<span class="hint" data-hint="LSP (Language Server Protocol) = 程序员工具(代码补全、跳转、诊断)的通信标准。VS Code的代码提示就是用这个">LSP</span>、Skill 系统</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- MCP -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Protocol</span>
+                                MCP (Model Context Protocol)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block"><span class="comment">// MCP 服务器作用域</span>
+<span class="hint" data-hint="local = 项目本地的MCP配置">local</span>:      .mcp.json (<span class="text-muted">项目目录</span>)
+<span class="hint" data-hint="user = 用户全局的MCP配置">user</span>:       ~/.claude/.mcp.json
+<span class="hint" data-hint="project = 项目级MCP配置">project</span>:    .claude/.mcp.json
+dynamic:    运行时添加
+<span class="hint" data-hint="enterprise = 企业强制配置的MCP服务器">enterprise</span>: 策略强制
+
+<span class="comment">// 连接流程</span>
+1. 服务器发现 → 连接尝试
+2. 需要认证 → OAuth 流程
+3. 工具/命令/资源获取
+4. 权限提示通过 channel 发送
+5. 重连: 指数退避, 最多5次</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LSP -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Protocol</span>
+                                LSP (Language Server Protocol)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block">LSPServerManager: 按文件扩展名路由到 LSP 服务器
+LSPServerInstance: 单个服务器生命周期
+LSPClient: vscode-jsonrpc 协议通信
+
+<span class="comment">// 关键特性</span>
+MAX_DIAGNOSTICS_PER_FILE = <span class="number">10</span>
+MAX_TOTAL_DIAGNOSTICS = <span class="number">30</span>
+LRU 去重缓存 (MAX_DELIVERED_FILES = <span class="number">500</span>)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skill System -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Skills</span>
+                                Skill 系统
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="code-block"><span class="comment">// 来源</span>
+1. 内置技能: src/skills/bundled/ (remember, verify, debug, stuck...)
+2. 用户技能: ~/.claude/skills/*.md
+3. 项目技能: .claude/skills/*.md
+4. MCP 技能: 通过 MCP 服务器提供
+
+<span class="comment">// 格式</span>
+<span class="type">---</span>
+name: skill-name
+description: ...
+whenToUse: ...
+allowedTools: [...]
+model: inherit/haiku/sonnet/opus
+hooks: { ... }
+<span class="type">---</span>
+[技能提示词内容]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 10: Slash Commands -->
+            <section id="slash" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon slash">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 6h16M4 12h16M4 18h10"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">10. 斜杠命令</div>
+                        <div class="module-subtitle">命令分类、100+ 内置命令</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Command Types -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Types</span>
+                                命令分类
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td>prompt</td><td>AI 驱动，展开为提示文本</td></tr>
+                                            <tr><td>local-jsx</td><td>Ink UI 组件</td></tr>
+                                            <tr><td>local</td><td>同步本地操作</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Command List -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Commands</span>
+                                主要命令列表
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="comparison-grid">
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">Git 与版本控制</div>
+                                        <div class="comparison-feature"><span>/commit</span><span>创建 git 提交</span></div>
+                                        <div class="comparison-feature"><span>/review</span><span><span class="hint" data-hint="PR = Pull Request。代码审查请求">审查 PR</span></span></div>
+                                        <div class="comparison-feature"><span>/diff</span><span><span class="hint" data-hint="diff = 显示文件差异">查看未提交的更改</span></span></div>
+                                        <div class="comparison-feature"><span>/branch</span><span><span class="hint" data-hint="branch = 创建对话分支，可以并行探索不同方向">创建对话分支</span></span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">对话管理</div>
+                                        <div class="comparison-feature"><span>/resume</span><span><span class="hint" data-hint="恢复之前中断的对话，继续工作">恢复之前的对话</span></span></div>
+                                        <div class="comparison-feature"><span>/clear</span><span>清除对话历史</span></div>
+                                        <div class="comparison-feature"><span>/compact</span><span><span class="hint" data-hint="compact = 压缩对话上下文，节省token">压缩对话</span></span></div>
+                                        <div class="comparison-feature"><span>/rewind</span><span><span class="hint" data-hint="rewind = 回退对话到之前的某个点，类似'时光倒流'">回退到之前的点</span></span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">上下文与配置</div>
+                                        <div class="comparison-feature"><span>/context</span><span><span class="hint" data-hint="context = 上下文，指当前对话的所有信息">可视化上下文使用情况</span></span></div>
+                                        <div class="comparison-feature"><span>/memory</span><span><span class="hint" data-hint="memory = 记忆系统。查看/编辑AI记住的内容">编辑记忆文件</span></span></div>
+                                        <div class="comparison-feature"><span>/config</span><span>打开配置面板</span></div>
+                                        <div class="comparison-feature"><span>/plan</span><span><span class="hint" data-hint="Plan Mode = 先制定详细计划再执行，避免走弯路">启用/查看规划模式</span></span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">模型与推理</div>
+                                        <div class="comparison-feature"><span>/model</span><span><span class="hint" data-hint="model = 底层AI模型。如Sonnet、Haiku、Opus">设置 AI 模型</span></span></div>
+                                        <div class="comparison-feature"><span>/effort</span><span><span class="hint" data-hint="effort = 努力程度。设置AI思考的深度">设置 effort level</span></span></div>
+                                        <div class="comparison-feature"><span>/fast</span><span><span class="hint" data-hint="fast mode = 快速模式，用更便宜的模型省成本">切换 fast mode</span></span></div>
+                                    </div>
+                                    <div class="comparison-card">
+                                        <div class="comparison-card-header">工具与扩展</div>
+                                        <div class="comparison-feature"><span>/tasks</span><span><span class="hint" data-hint="tasks = 后台任务管理，类似操作系统里的任务管理器">管理后台任务</span></span></div>
+                                        <div class="comparison-feature"><span>/skills</span><span><span class="hint" data-hint="skills = 技能列表">列出可用技能</span></span></div>
+                                        <div class="comparison-feature"><span>/agents</span><span><span class="hint" data-hint="agents = 子智能体配置">管理智能体配置</span></span></div>
+                                        <div class="comparison-feature"><span>/mcp</span><span><span class="hint" data-hint="MCP = Model Context Protocol，外部工具协议">管理 MCP 服务器</span></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 11: Design Principles -->
+            <section id="principle" class="module">
+                <div class="module-header" onclick="toggleModule(this)">
+                    <div class="module-icon principle">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="module-title">11. 核心设计原则</div>
+                        <div class="module-subtitle">构建 Agent 的关键要点</div>
+                    </div>
+                    <svg class="module-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </div>
+
+                <div class="cards">
+                    <!-- Key Principles -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge high">Principles</span>
+                                构建 Agent 的关键要点
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Aspect</th>
+                                                <th>Recommendation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td><span class="hint" data-hint="工具设计 = 给AI描述每个工具是做什么的，怎么用">工具设计</span></td><td>每个工具提供完整描述 Prompt，包含使用限制</td></tr>
+                                            <tr><td><span class="hint" data-hint="错误处理 = 不管成功失败，返回格式一致，只是用is_error区分">错误处理</span></td><td>成功/失败使用相同格式，仅用 is_error 区分</td></tr>
+                                            <tr><td><span class="hint" data-hint="反馈循环 = AI执行后看到结果，决定下一步怎么做">反馈循环</span></td><td>工具结果必须反馈给模型让其调整策略</td></tr>
+                                            <tr><td><span class="hint" data-hint="上下文管理 = AI能记住多少对话内容的管理">上下文管理</span></td><td>实现自动压缩防止上下文溢出</td></tr>
+                                            <tr><td><span class="hint" data-hint="记忆系统 = AI如何记住用户、项目、偏好等信息">记忆系统</span></td><td>分离四种记忆类型，定期提取和更新</td></tr>
+                                            <tr><td><span class="hint" data-hint="权限控制 = 危险操作需要确认，防止误删">权限控制</span></td><td>实现多层权限检查和确认机制</td></tr>
+                                            <tr><td><span class="hint" data-hint="自愈能力 = AI能根据错误自己调整策略，而不是死板重试">自愈能力</span></td><td>诊断原因再行动，而非盲目重试</td></tr>
+                                            <tr><td><span class="hint" data-hint="智能体分工 = 不同AI做不同的事，协同工作">智能体分工</span></td><td>不同任务使用不同类型的专业智能体</td></tr>
+                                            <tr><td><span class="hint" data-hint="验证机制 = 不是确认代码能工作，而是故意找bug">验证机制</span></td><td>验证智能体应该试图破坏，而非确认工作</td></tr>
+                                            <tr><td><span class="hint" data-hint="提示词组织 = 把固定不变的内容和经常变化的内容分开">提示词组织</span></td><td>静态/动态分离，支持缓存优化</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Self-Healing Summary -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard(this)">
+                            <span class="card-title">
+                                <span class="card-badge medium">Summary</span>
+                                自修复机制总结 (10 点)
+                            </span>
+                            <svg class="card-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-body">
+                                <ol class="list">
+                                    <li><span class="highlight">反馈循环</span> (最核心) - 工具执行结果都作为 tool_result 返回</li>
+                                    <li><span class="highlight">精心设计的 System Prompt</span> - "诊断原因再行动"而非"盲目重试"</li>
+                                    <li><span class="highlight">四层错误恢复</span> - PTL恢复 → 输出超限恢复 → 模型过载回退 → 工具错误自然恢复</li>
+                                    <li><span class="highlight">防错设计</span> - EditTool 的"必须先读取"、"唯一性检查"</li>
+                                    <li><span class="highlight">错误记忆保持</span> - Compact 显式保留 "Errors and fixes" 段</li>
+                                    <li><span class="highlight">对抗性验证</span> - Verification Agent 专门设计为"试图破坏实现"</li>
+                                    <li><span class="highlight">多智能体分工</span> - Explore → Plan → Implementation → Verification</li>
+                                    <li><span class="highlight">权限安全网</span> - 分类器 + 沙箱 + Hook 系统</li>
+                                    <li><span class="highlight">上下文管理</span> - 自动压缩 + 微压缩 + 上下文折叠</li>
+                                    <li><span class="highlight">Prompt Cache 优化</span> - 静态/动态分界线 + Fork 共享缓存</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <p>Claude Code Architecture Analysis</p>
+                <p style="margin-top: 8px;">Based on 2026-03-31 Leaked Source | Generated 2026-04-06</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Mode toggle
+        let isSimpleMode = false;
+
+        function toggleMode() {
+            isSimpleMode = !isSimpleMode;
+            document.body.classList.toggle('simple-mode', isSimpleMode);
+            document.getElementById('mode-text').textContent = isSimpleMode ? '专业模式' : '通俗模式';
+        }
+
+        // Toggle card expansion
+        function toggleCard(header) {
+            const card = header.parentElement;
+            card.classList.toggle('expanded');
+        }
+
+        // Toggle module expansion
+        function toggleModule(header) {
+            header.classList.toggle('expanded');
+        }
+
+        // Sidebar active state
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Intersection Observer for active sidebar
+        const sections = document.querySelectorAll('.module[id]');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    document.querySelectorAll('.sidebar-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+
+        sections.forEach(section => observer.observe(section));
+
+        // Open first card of first module by default
+        document.querySelector('.module .card .card-header')?.click();
+    </script>
+</body>
+</html>
