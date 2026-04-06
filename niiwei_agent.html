@@ -227,6 +227,88 @@
             color: var(--accent);
         }
 
+        /* Hero Links */
+        .hero-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .hero-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .hero-link.primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .hero-link.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .hero-link.secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .hero-link.secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .hero-link-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-link-wrap .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            white-space: nowrap;
+            z-index: 10;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .hero-link-wrap:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--border);
+        }
+
+        .tooltip-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
         /* Hero Preview */
         .hero-preview {
             opacity: 0;
@@ -766,6 +848,24 @@
                     <span class="feature-tag">Session Persistence</span>
                     <span class="feature-tag">Context Compression</span>
                 </div>
+                <div class="hero-links">
+                    <div class="hero-link-wrap">
+                        <a href="https://github.com/niiwei/niiwei_agent" target="_blank" class="hero-link primary">
+                            从0搭建仓库 →
+                        </a>
+                        <div class="tooltip">
+                            <div class="tooltip-text">直接参考 Claude Code 源码<br>从0搭建的 Agent</div>
+                        </div>
+                    </div>
+                    <div class="hero-link-wrap">
+                        <a href="https://github.com/niiwei/agent-based-on-cc-mini" target="_blank" class="hero-link secondary">
+                            cc-mini 优化版仓库 →
+                        </a>
+                        <div class="tooltip">
+                            <div class="tooltip-text">在 cc-mini 基础上<br>优化得来的 Agent</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="hero-preview">
@@ -861,21 +961,6 @@
                             <span class="token-value">全程用量与费用</span>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Image Section -->
-        <section class="image-section">
-            <div class="image-placeholder">
-                <div class="image-placeholder-content">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <path d="M21 15l-5-5L5 21"/>
-                    </svg>
-                    <div class="image-placeholder-text">[日志输出效果截图]</div>
-                    <div class="image-caption">彩色终端输出 + Token 统计面板</div>
                 </div>
             </div>
         </section>
@@ -1021,20 +1106,6 @@
             </div>
         </section>
 
-        <!-- Image Section 2 -->
-        <section class="image-section">
-            <div class="image-placeholder">
-                <div class="image-placeholder-content">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <path d="M21 15l-5-5L5 21"/>
-                    </svg>
-                    <div class="image-placeholder-text">[项目截图]</div>
-                    <div class="image-caption">命令行交互效果</div>
-                </div>
-            </div>
-        </section>
     </div>
 
     <!-- Footer -->
