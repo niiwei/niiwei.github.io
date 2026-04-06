@@ -82,13 +82,21 @@
 
         /* Header */
         header {
-            padding: 32px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            padding: 0 48px;
+            z-index: 100;
         }
 
-        .back-link {
+        .nav-back {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
             color: var(--text-secondary);
@@ -97,35 +105,44 @@
             align-items: center;
             gap: 8px;
             transition: color 0.2s ease;
+            flex-shrink: 0;
         }
 
-        .back-link:hover {
+        .nav-back:hover {
             color: var(--accent);
         }
 
-        .back-link svg {
+        .nav-back svg {
             width: 16px;
             height: 16px;
         }
 
-        .logo-small {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
+        .nav-center {
+            flex: 1;
+            text-align: center;
         }
 
-        .logo-small img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+        .nav-project {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-user {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
 
         /* Hero */
         .hero {
             padding: 60px 0 80px;
             display: grid;
-            grid-template-columns: 1fr 280px;
+            grid-template-columns: 1fr 420px;
             gap: 60px;
             align-items: start;
         }
@@ -196,6 +213,7 @@
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .hero-link {
@@ -227,6 +245,54 @@
             color: var(--accent);
         }
 
+        .hero-link-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-link-wrap .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            white-space: nowrap;
+            z-index: 10;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .hero-link-wrap:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--border);
+        }
+
+        .tooltip-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .tooltip-text span {
+            color: var(--accent);
+        }
+
         /* Logo Card */
         .logo-card {
             opacity: 0;
@@ -237,21 +303,15 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 32px;
+            overflow: hidden;
             text-align: center;
+            max-width: 420px;
         }
 
-        .logo-wrapper img {
-            max-width: 180px;
+        .logo-wrapper .screenshot-large {
+            width: 100%;
             height: auto;
-        }
-
-        .logo-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            color: var(--text-muted);
-            margin-top: 16px;
-            letter-spacing: 1px;
+            display: block;
         }
 
         /* Section */
@@ -589,15 +649,16 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <a href="index.html" class="back-link">
+            <a href="index.html" class="nav-back">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
-                Back to Portfolio
+                返回
             </a>
-            <div class="logo-small">
-                <img src="https://raw.githubusercontent.com/niiwei/typing-quiz/main/src/main/resources/static/assets/img/brand/logo/%E4%B8%BB%E5%AF%86%E7%A0%81.svg" alt="MindPop Logo" onerror="this.parentElement.innerHTML='MindPop'">
+            <div class="nav-center">
+                <span class="nav-project">MindPop</span>
             </div>
+            <div class="nav-user">杨晓文 · 想做只赚钱不骗钱的产品经理</div>
         </header>
 
         <!-- Hero -->
@@ -623,9 +684,14 @@
                     <span class="hero-tag">AI辅助开发</span>
                 </div>
                 <div class="hero-links">
-                    <a href="http://47.102.147.127:8080" target="_blank" class="hero-link primary">
-                        访问项目 →
-                    </a>
+                    <div class="hero-link-wrap">
+                        <a href="http://47.102.147.127:8080/login.html" target="_blank" class="hero-link primary">
+                            访问项目 →
+                        </a>
+                        <div class="tooltip">
+                            <div class="tooltip-text">账号：<span>test8</span><br>密码：<span>test8</span></div>
+                        </div>
+                    </div>
                     <a href="https://github.com/niiwei/typing-quiz" target="_blank" class="hero-link secondary">
                         GitHub源码
                     </a>
@@ -634,16 +700,78 @@
 
             <div class="logo-card">
                 <div class="logo-wrapper">
-                    <img src="https://raw.githubusercontent.com/niiwei/typing-quiz/main/src/main/resources/static/assets/img/brand/logo/%E4%B8%BB%E5%AF%86%E7%A0%81.svg" alt="MindPop Logo">
-                    <div class="logo-label">MindPop 品牌标识</div>
+                    <img src="assets/mindpop截图.png" alt="MindPop 截图" class="screenshot-large">
                 </div>
+            </div>
+        </section>
+
+        <!-- Articles -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2 class="section-title">经验分享</h2>
+                <div class="section-line"></div>
+            </div>
+
+            <div class="articles-list">
+                <a href="https://www.xiaohongshu.com/discovery/item/69a10779000000001a028a33" target="_blank" class="article-link">
+                    <div class="article-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-title">文科生自学Vibe Coding:我在文档管理踩的坑</div>
+                        <div class="article-source">小红书 · 经验分享</div>
+                    </div>
+                </a>
+
+                <a href="https://www.xiaohongshu.com/discovery/item/699f1a35000000001a02a016" target="_blank" class="article-link">
+                    <div class="article-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-title">文科生自学Vibe Coding:多一个步骤,省一半时间</div>
+                        <div class="article-source">小红书 · 经验分享</div>
+                    </div>
+                </a>
+
+                <a href="https://www.xiaohongshu.com/discovery/item/69a43fd30000000028008d9f" target="_blank" class="article-link">
+                    <div class="article-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-title">文科生自学Vibe Coding:即想即建,即用即弃</div>
+                        <div class="article-source">小红书 · 经验分享</div>
+                    </div>
+                </a>
+
+                <a href="https://www.xiaohongshu.com/discovery/item/69a50bb9000000000e00e3d4" target="_blank" class="article-link">
+                    <div class="article-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                    </div>
+                    <div class="article-content">
+                        <div class="article-title">文科生自学Vibe Coding: 复旦学新闻的AI思考</div>
+                        <div class="article-source">小红书 · 经验分享</div>
+                    </div>
+                </a>
             </div>
         </section>
 
         <!-- Core Features -->
         <section class="section">
             <div class="section-header">
-                <span class="section-number">01</span>
+                <span class="section-number">02</span>
                 <h2 class="section-title">核心功能</h2>
                 <div class="section-line"></div>
             </div>
@@ -701,43 +829,6 @@
 <span class="comment">// 简易度动态调整: 评级好则上升, 差则下降(范围1300-5000)</span>
 <span class="keyword">int</span> newEaseFactor = easeFactor + (rating == <span class="number">4</span> ? <span class="number">150</span> : (rating == <span class="number">1</span> ? -<span class="number">250</span> : <span class="number">0</span>));
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Status Flow -->
-        <section class="section">
-            <div class="section-header">
-                <span class="section-number">02</span>
-                <h2 class="section-title">复习状态流转</h2>
-                <div class="section-line"></div>
-            </div>
-
-            <div class="cards-grid three">
-                <div class="feature-card">
-                    <div class="feature-icon green">1</div>
-                    <h3 class="feature-title">新测验</h3>
-                    <p class="feature-desc">首次学习新内容</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon blue">2</div>
-                    <h3 class="feature-title">学习中</h3>
-                    <p class="feature-desc">初次记忆巩固阶段</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon purple">3</div>
-                    <h3 class="feature-title">待复习</h3>
-                    <p class="feature-desc">等待复习周期到来</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon accent">4</div>
-                    <h3 class="feature-title">今日复习</h3>
-                    <p class="feature-desc">在遗忘临界点推送</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon green">5</div>
-                    <h3 class="feature-title">重学中</h3>
-                    <p class="feature-desc">评级困难时触发</p>
                 </div>
             </div>
         </section>
@@ -809,135 +900,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pages -->
-        <section class="section">
-            <div class="section-header">
-                <span class="section-number">04</span>
-                <h2 class="section-title">核心页面</h2>
-                <div class="section-line"></div>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>页面</th>
-                            <th>功能说明</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code>/home.html</code></td>
-                            <td>首页复习看板（今日待复习统计）</td>
-                        </tr>
-                        <tr>
-                            <td><code>/quizzes.html</code></td>
-                            <td>测验列表（分组筛选）</td>
-                        </tr>
-                        <tr>
-                            <td><code>/review.html</code></td>
-                            <td>复习模式（SM-2算法驱动）</td>
-                        </tr>
-                        <tr>
-                            <td><code>/stats.html</code></td>
-                            <td>学习统计（今日/本周/本月数据）</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Articles -->
-        <section class="section">
-            <div class="section-header">
-                <span class="section-number">05</span>
-                <h2 class="section-title">经验分享</h2>
-                <div class="section-line"></div>
-            </div>
-
-            <div class="articles-list">
-                <a href="https://www.xiaohongshu.com/discovery/item/69a10779000000001a028a33" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding:我在文档管理踩的坑</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-
-                <a href="https://www.xiaohongshu.com/discovery/item/699f1a35000000001a02a016" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding:多一个步骤,省一半时间</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-
-                <a href="https://www.xiaohongshu.com/discovery/item/69a43fd30000000028008d9f" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding:即想即建,即用即弃</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-
-                <a href="https://www.xiaohongshu.com/discovery/item/69a50bb9000000000e00e3d4" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding: 复旦学新闻的AI思考</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-            </div>
-        </section>
-
-        <!-- Contact -->
-        <section class="section">
-            <div class="section-header">
-                <span class="section-number">06</span>
-                <h2 class="section-title">联系方式</h2>
-                <div class="section-line"></div>
-            </div>
-
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <div class="contact-label">开发者</div>
-                    <div class="contact-value">杨晓文</div>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-label">微信</div>
-                    <div class="contact-value">13807924420</div>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-label">邮箱</div>
-                    <div class="contact-value"><a href="mailto:2998260110@qq.com">2998260110@qq.com</a></div>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-label">试用账户</div>
-                    <div class="contact-value">用户名: test8 / 密码: test8</div>
                 </div>
             </div>
         </section>

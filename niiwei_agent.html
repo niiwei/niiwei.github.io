@@ -85,7 +85,7 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: rgba(13, 13, 13, 0.9);
+            background: rgba(13, 13, 13, 0.95);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -94,32 +94,46 @@
             z-index: 100;
         }
 
-        .header-logo {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--accent);
-            letter-spacing: 0.5px;
-        }
-
-        .header-title {
-            margin-left: auto;
+        .nav-back {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
             color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .nav-back:hover {
+            color: var(--accent);
+        }
+
+        .nav-back svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .nav-center {
+            flex: 1;
+            text-align: center;
+        }
+
+        .nav-project {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
             letter-spacing: 0.5px;
         }
 
-        .header-badge {
-            margin-left: 20px;
-            padding: 4px 12px;
-            background: var(--accent-muted);
-            color: var(--accent);
-            border-radius: 20px;
+        .nav-user {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
-            font-weight: 500;
+            font-size: 11px;
+            color: var(--text-muted);
             letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
 
         /* Layout */
@@ -720,9 +734,16 @@
 
     <!-- Header -->
     <header class="header">
-        <div class="header-logo">niiwei.dev</div>
-        <div class="header-title">NiiWei Agent</div>
-        <div class="header-badge">Based on cc-mini</div>
+        <a href="index.html" class="nav-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            返回
+        </a>
+        <div class="nav-center">
+            <span class="nav-project">NiiWei Agent</span>
+        </div>
+        <div class="nav-user">杨晓文 · 想做只赚钱不骗钱的产品经理</div>
     </header>
 
     <div class="container">

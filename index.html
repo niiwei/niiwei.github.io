@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NiiWei - Developer Portfolio</title>
+    <title>杨晓文 - 产品经理</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -44,9 +44,9 @@
             line-height: 1.7;
             min-height: 100vh;
             overflow-x: hidden;
+            padding-top: 60px;
         }
 
-        /* Noise texture overlay */
         body::before {
             content: '';
             position: fixed;
@@ -60,7 +60,6 @@
             z-index: 1000;
         }
 
-        /* Subtle gradient background */
         .bg-gradient {
             position: fixed;
             top: 0;
@@ -74,19 +73,25 @@
             z-index: -1;
         }
 
-        /* Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 48px;
         }
 
-        /* Header */
         header {
-            padding: 48px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            padding: 0 48px;
+            z-index: 100;
         }
 
         .logo {
@@ -95,11 +100,13 @@
             font-weight: 500;
             color: var(--accent);
             letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
 
         .nav {
             display: flex;
             gap: 32px;
+            margin-left: auto;
         }
 
         .nav a {
@@ -115,7 +122,6 @@
             color: var(--accent);
         }
 
-        /* Hero Section */
         .hero {
             padding: 80px 0 120px;
             display: grid;
@@ -165,7 +171,16 @@
             color: var(--text-secondary);
             max-width: 520px;
             line-height: 1.8;
-            margin-bottom: 40px;
+            margin-bottom: 16px;
+        }
+
+        .hero-slogan {
+            font-size: 18px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 32px;
+            padding-left: 16px;
+            border-left: 2px solid var(--accent);
         }
 
         .hero-tags {
@@ -184,7 +199,37 @@
             color: var(--text-secondary);
         }
 
-        /* Avatar */
+        .hero-contact {
+            display: flex;
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .contact-item:hover {
+            color: var(--accent);
+        }
+
+        .contact-item svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        .contact-item:hover svg {
+            opacity: 1;
+        }
+
         .avatar-wrapper {
             position: relative;
             opacity: 0;
@@ -211,12 +256,20 @@
             width: 100%;
             height: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
             color: var(--text-muted);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: 14px;
+            gap: 12px;
+        }
+
+        .avatar-placeholder svg {
+            width: 64px;
+            height: 64px;
+            opacity: 0.4;
         }
 
         .avatar-border {
@@ -236,7 +289,6 @@
             opacity: 0.5;
         }
 
-        /* Section */
         .section {
             padding: 100px 0;
         }
@@ -267,7 +319,6 @@
             background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
         }
 
-        /* Resume Section */
         .resume {
             display: grid;
             grid-template-columns: 1fr 400px;
@@ -309,7 +360,88 @@
             line-height: 1.7;
         }
 
-        /* Resume Image */
+        .resume-highlight {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .resume-highlight-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            padding: 4px 12px;
+            background: var(--accent-muted);
+            color: var(--accent);
+            border-radius: 12px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            bottom: 8px;
+            width: 1px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 32px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .timeline-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .timeline-subtitle {
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .timeline-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .gray-small {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
         .resume-image {
             position: relative;
         }
@@ -367,7 +499,25 @@
             letter-spacing: 0.5px;
         }
 
-        /* Projects Grid */
+        .resume-card-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .resume-card-link:hover .resume-card {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .resume-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -518,7 +668,6 @@
             background: var(--green);
         }
 
-        /* Footer */
         footer {
             padding: 80px 0;
             text-align: center;
@@ -552,7 +701,6 @@
             color: var(--accent);
         }
 
-        /* Animations */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -564,7 +712,6 @@
             }
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .hero {
                 grid-template-columns: 1fr;
@@ -614,30 +761,49 @@
     <div class="bg-gradient"></div>
 
     <div class="container">
-        <!-- Header -->
         <header>
             <div class="logo">NiiWei</div>
             <nav class="nav">
-                <a href="#about">About</a>
-                <a href="#resume">Resume</a>
-                <a href="#projects">Projects</a>
+                <a href="#about">关于</a>
+                <a href="#resume">经历</a>
+                <a href="#projects">项目</a>
             </nav>
         </header>
 
-        <!-- Hero -->
         <section class="hero" id="about">
             <div class="hero-content">
-                <div class="hero-tag">Developer & Designer</div>
-                <h1>你好，我是 <span class="name">NiiWei</span></h1>
-                <p class="hero-desc">
-                    全栈开发者，专注于 AI Agent 与命令行工具开发。热爱用代码构建高效、优雅的产品。
-                </p>
+                <div class="hero-tag">AI 产品经理</div>
+                <h1>杨晓文</h1>
+                <p class="hero-desc">想做只赚钱不骗钱的产品经理</p>
+                <p class="hero-slogan">做出好产品，提供好体验</p>
                 <div class="hero-tags">
-                    <span class="hero-tag-item">TypeScript</span>
-                    <span class="hero-tag-item">React</span>
-                    <span class="hero-tag-item">Node.js</span>
-                    <span class="hero-tag-item">AI Agent</span>
-                    <span class="hero-tag-item">CLI Tools</span>
+                    <span class="hero-tag-item">鬼点子多</span>
+                    <span class="hero-tag-item">智能客服</span>
+                    <span class="hero-tag-item">擅长加班</span>
+                    <span class="hero-tag-item">AI梦男</span>
+                    <span class="hero-tag-item">张惠妹</span>
+                    <span class="hero-tag-item">伍佰</span>
+                </div>
+                <div class="hero-contact">
+                    <a href="tel:13807924420" class="contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
+                        13807924420
+                    </a>
+                    <a href="mailto:2998260110@qq.com" class="contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        2998260110@qq.com
+                    </a>
+                    <a href="https://github.com/niiwei" target="_blank" class="contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                        GitHub
+                    </a>
                 </div>
             </div>
 
@@ -645,18 +811,15 @@
                 <div class="avatar-glow"></div>
                 <div class="avatar-border"></div>
                 <div class="avatar">
-                    <div class="avatar-placeholder">
-                        [Profile Photo]
-                    </div>
+                    <img src="assets/亚兰知子.jpg" alt="杨晓文" />
                 </div>
             </div>
         </section>
 
-        <!-- Resume Section -->
         <section class="section" id="resume">
             <div class="section-header">
                 <span class="section-number">01</span>
-                <h2 class="section-title">简历</h2>
+                <h2 class="section-title">经历</h2>
                 <div class="section-line"></div>
             </div>
 
@@ -664,69 +827,76 @@
                 <div class="resume-info">
                     <div class="resume-item">
                         <div class="resume-label">教育背景</div>
-                        <div class="resume-value">[你的大学] · [专业]</div>
-                        <div class="resume-desc">计算机科学相关专业，本科/硕士</div>
-                    </div>
-
-                    <div class="resume-item">
-                        <div class="resume-label">工作经历</div>
-                        <div class="resume-value">[公司名称] · [职位]</div>
-                        <div class="resume-desc">负责 AI Agent 相关产品开发，主导核心架构设计</div>
-                    </div>
-
-                    <div class="resume-item">
-                        <div class="resume-label">技术栈</div>
-                        <div class="resume-value">Frontend & Backend & AI</div>
-                        <div class="resume-desc">
-                            前端：React, TypeScript, TailwindCSS · 后端：Node.js, Python, PostgreSQL · AI：LangChain, Anthropic SDK, OpenAI API
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-title">复旦大学 · 战略传播</div>
+                                <div class="timeline-desc">GPA 3.69/4.0</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">中央财经大学 · 金融科技 <span class="gray-small">（2021年高点入局版）</span></div>
+                                <div class="timeline-desc">GPA 86.85/100</div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="resume-item">
-                        <div class="resume-label">开源项目</div>
-                        <div class="resume-value">NiiWei Agent</div>
-                        <div class="resume-desc">
-                            类 Claude Code 的命令行代码助手，以 ReAct 为核心流程。支持流式输出、工具并行、五级压缩、三层记忆系统。
+                        <div class="resume-label">工作经历</div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026年04月 - 2026年06月（预计）</div>
+                                <div class="timeline-title">小红书 · 商家智能客服</div>
+                                <div class="timeline-subtitle">AI产品经理</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2025年09月 - 2026年04月</div>
+                                <div class="timeline-title">小红书 · 平台智能客服</div>
+                                <div class="timeline-subtitle">AI产品运营</div>
+                                <div class="timeline-desc">主导"方案包为空"异常治理，通过数据定位根因并落地Agent方案，使异常发生率下降90%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resume-item">
+                        <div class="resume-label">耐造经历</div>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-title">海底捞后厨国庆兼职</div>
+                                <div class="timeline-desc">每天工作约12小时，高强度体力活</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">长途骑行</div>
+                                <div class="timeline-desc">14天，日均最高温度38°C，每天骑行约110公里</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">鲅鱼湾全程马拉松</div>
+                                <div class="timeline-desc">完赛（问时间就不礼貌了）</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="resume-image">
-                    <div class="resume-card">
-                        <div class="resume-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                <circle cx="12" cy="10" r="3"/>
-                                <path d="M7 21v-2a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v2"/>
-                            </svg>
-                            <span>[Resume Image]</span>
+                    <a href="第七版简历.pdf" target="_blank" class="resume-card-link">
+                        <div class="resume-card">
+                            <img src="assets/第七版简历_01.png" alt="杨晓文简历" />
+                            <div class="resume-label-tag">PDF / 228KB</div>
                         </div>
-                        <div class="resume-label-tag">PDF / 1.2MB</div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </section>
 
-        <!-- Projects Section -->
         <section class="section" id="projects">
             <div class="section-header">
                 <span class="section-number">02</span>
-                <h2 class="section-title">项目</h2>
+                <h2 class="section-title">开源项目</h2>
                 <div class="section-line"></div>
             </div>
 
             <div class="projects-grid">
-                <!-- Project 1: Claude Code Analysis -->
                 <a href="ClaudeCode架构-交互式.html" target="_blank" class="project-card">
                     <div class="project-preview">
-                        <div class="project-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
-                            </svg>
-                            <span>Claude Code Architecture</span>
-                        </div>
+                        <img src="assets/CC截图.png" alt="Claude Code 架构" />
                         <div class="project-overlay"></div>
                         <span class="project-view">View →</span>
                     </div>
@@ -740,16 +910,9 @@
                     </div>
                 </a>
 
-                <!-- Project 2: NiiWei Agent -->
                 <a href="niiwei_agent.html" target="_blank" class="project-card">
                     <div class="project-preview">
-                        <div class="project-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <polyline points="4,17 10,11 4,5"/>
-                                <line x1="12" y1="19" x2="20" y2="19"/>
-                            </svg>
-                            <span>NiiWei Agent</span>
-                        </div>
+                        <img src="assets/niiwei_agent截图.png" alt="NiiWei Agent" />
                         <div class="project-overlay"></div>
                         <span class="project-view">View →</span>
                     </div>
@@ -757,47 +920,35 @@
                         <div class="project-category">AI Agent</div>
                         <h3 class="project-title">NiiWei Agent</h3>
                         <p class="project-desc">
-                            基于 cc-mini 优化的 AI 编程助手，支持实时日志、Token 统计、工具调用可视化。
+                            基于 cc-mini 优化的 AI 编程助手，支持实时日志、Token 统计、工具调用可视化。以 ReAct 为核心流程，支持流式输出、工具并行、五级压缩、三层记忆系统。
                         </p>
                         <span class="project-status">Completed</span>
                     </div>
                 </a>
 
-<<<<<<< HEAD
-                <!-- Project 3: MindPop -->
                 <a href="mindpop.html" target="_blank" class="project-card">
                     <div class="project-preview">
-                        <div class="project-placeholder">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
-                            </svg>
-                            <span>MindPop</span>
-                        </div>
+                        <img src="assets/mindpop截图.png" alt="MindPop" />
                         <div class="project-overlay"></div>
                         <span class="project-view">View →</span>
                     </div>
                     <div class="project-content">
                         <div class="project-category">AI Learning</div>
-                        <h3 class="project-title">MindPop - 记忆闪卡</h3>
+                        <h3 class="project-title">敲脑壳 MindPop</h3>
                         <p class="project-desc">
-                            基于 SM-2 算法的间隔重复记忆系统，支持卡片管理、学习进度追踪、错题复习。
+                            基于 SM-2 算法的间隔重复记忆系统，支持卡片管理、学习进度追踪、错题复习。解决"学了就忘"的痛点，通过强制主动输出和科学间隔复习。
                         </p>
                         <span class="project-status">Completed</span>
                     </div>
                 </a>
->>>>>>> 9aee4b8dd9e6393ef2f0a6fd115127f9e72cc528
             </div>
         </section>
 
-        <!-- Footer -->
         <footer>
-            <p class="footer-text">© 2026 NiiWei · Built with Purpose</p>
+            <p class="footer-text">© 2026 杨晓文 · 想做只赚钱不骗钱的产品经理</p>
             <div class="footer-links">
-                <a href="#">GitHub</a>
-                <a href="#">Email</a>
-                <a href="#">Twitter</a>
+                <a href="https://github.com/niiwei" target="_blank">GitHub</a>
+                <a href="mailto:2998260110@qq.com">Email</a>
             </div>
         </footer>
     </div>
