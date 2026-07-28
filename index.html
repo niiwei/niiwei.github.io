@@ -3,11 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="杨晓文的个人主页，记录 AI 产品经历、耐造经历与开源项目。">
     <title>杨晓文 - 产品经理</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/主logo.svg" type="image/svg+xml">
+    <link rel="preload" href="assets/crimson-pro-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="assets/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin>
     <style>
+        @font-face {
+            font-family: 'Crimson Pro';
+            font-style: normal;
+            font-weight: 400 700;
+            font-display: swap;
+            src: url('assets/crimson-pro-latin.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'JetBrains Mono';
+            font-style: normal;
+            font-weight: 400 500;
+            font-display: swap;
+            src: url('assets/jetbrains-mono-latin.woff2') format('woff2');
+        }
+
         :root {
             --bg-primary: #0d0d0d;
             --bg-secondary: #141414;
@@ -17,7 +34,7 @@
             --border-hover: #3a3a3a;
             --text-primary: #ffffff;
             --text-secondary: #8a8a8a;
-            --text-muted: #555555;
+            --text-muted: #7a7a7a;
             --accent: #c9a66b;
             --accent-hover: #d4b57a;
             --accent-muted: rgba(201, 166, 107, 0.08);
@@ -537,7 +554,7 @@
 
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 24px;
         }
 
@@ -562,6 +579,7 @@
         .project-card:nth-child(1) { opacity: 0; animation: fadeInUp 0.6s ease 0.1s forwards; }
         .project-card:nth-child(2) { opacity: 0; animation: fadeInUp 0.6s ease 0.2s forwards; }
         .project-card:nth-child(3) { opacity: 0; animation: fadeInUp 0.6s ease 0.3s forwards; }
+        .project-card:nth-child(4) { opacity: 0; animation: fadeInUp 0.6s ease 0.4s forwards; }
 
         .project-preview {
             aspect-ratio: 16/10;
@@ -756,12 +774,26 @@
 
         @media (max-width: 768px) {
             .container {
-                padding: 0 24px;
+                padding: 0 20px;
             }
 
             header {
+                padding: 0 20px;
+                gap: 16px;
+            }
+
+            .nav {
+                gap: 20px;
+            }
+
+            .hero {
+                padding: 64px 0 80px;
+                gap: 40px;
+            }
+
+            .hero-contact {
                 flex-direction: column;
-                gap: 24px;
+                gap: 12px;
             }
 
             .hero h1 {
@@ -788,6 +820,7 @@
             </nav>
         </header>
 
+        <main>
         <section class="hero" id="about">
             <div class="hero-content">
                 <div class="hero-tag">AI 产品经理</div>
@@ -861,15 +894,21 @@
                         <div class="resume-label">工作经历</div>
                         <div class="timeline">
                             <div class="timeline-item">
-                                <div class="timeline-date">2026年04月 - 2026年06月（预计）</div>
+                                <div class="timeline-date">2026年06月 - 至今</div>
+                                <div class="timeline-title">阿里巴巴 · 千问事业部-智能营销</div>
+                                <div class="timeline-subtitle">AI产品经理</div>
+                                <div class="timeline-desc">独立负责平台 Skill 化、代理商评级系统等产品的设计与落地，已投产支撑全量代理商评级；对接 8 名研发推进复杂需求。</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-date">2026年04月 - 2026年06月</div>
                                 <div class="timeline-title">小红书 · 商家智能客服</div>
                                 <div class="timeline-subtitle">AI产品经理</div>
+                                <div class="timeline-desc">参与售前场景 Agent 链路重构，采用 ReAct 框架并推进 Agent 日志可视化；完成店小蜜、飞鸽等竞品调研，沉淀 20+ 个可落地优化方向。</div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-date">2025年09月 - 2026年04月</div>
                                 <div class="timeline-title">小红书 · 平台智能客服</div>
                                 <div class="timeline-subtitle">AI产品运营</div>
-                                <div class="timeline-desc">主导"方案包为空"异常治理，通过数据定位根因并落地Agent方案，使异常发生率下降90%</div>
                             </div>
                         </div>
                     </div>
@@ -878,26 +917,26 @@
                         <div class="resume-label">耐造经历</div>
                         <div class="timeline">
                             <div class="timeline-item">
-                                <div class="timeline-title">海底捞后厨国庆兼职</div>
-                                <div class="timeline-desc">每天工作约12小时，高强度体力活</div>
+                                <div class="timeline-title">抗压性强</div>
+                                <div class="timeline-desc">海底捞后厨国庆兼职，每天工作约 12 小时；长途骑行 14 天，每天骑行约 110 公里，日均最高温度 38°C。</div>
                             </div>
                             <div class="timeline-item">
-                                <div class="timeline-title">长途骑行</div>
-                                <div class="timeline-desc">14天，日均最高温度38°C，每天骑行约110公里</div>
+                                <div class="timeline-title">责任心强</div>
+                                <div class="timeline-desc">工位焊死之人、阿里巴巴加班王，持续学技能、对需求、想设计、改文档。</div>
                             </div>
                             <div class="timeline-item">
-                                <div class="timeline-title">鲅鱼湾全程马拉松</div>
-                                <div class="timeline-desc">完赛（问时间就不礼貌了）</div>
+                                <div class="timeline-title">执行力强</div>
+                                <div class="timeline-desc">自学多媒体制作，全网视频总播放量超 200 万；考研后运营百人微信群，付费批改服务超 150 人次并实现商业化。</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="resume-image">
-                    <a href="第七版简历.pdf" target="_blank" class="resume-card-link">
+                    <a href="第八版简历.pdf" target="_blank" class="resume-card-link">
                         <div class="resume-card">
-                            <img src="assets/第七版简历_01.png" alt="杨晓文简历" />
-                            <div class="resume-label-tag">PDF / 228KB</div>
+                            <img src="assets/第八版简历_01.png" alt="杨晓文第八版简历" />
+                            <div class="resume-label-tag">PDF / 336KB</div>
                         </div>
                     </a>
                 </div>
@@ -912,6 +951,22 @@
             </div>
 
             <div class="projects-grid">
+                <a href="https://github.com/niiwei/inktime-gallery" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <div class="project-preview">
+                        <img src="assets/inktime-gallery.jpg" alt="InkTime Gallery 照片画廊" />
+                        <div class="project-overlay"></div>
+                        <span class="project-view">View →</span>
+                    </div>
+                    <div class="project-content">
+                        <div class="project-category">Local-first macOS</div>
+                        <h3 class="project-title">InkTime Gallery</h3>
+                        <p class="project-desc">
+                            本地优先的 Mac 照片回忆助手。用视觉模型筛选值得回看的照片、生成相框与壁纸，并通过 LaunchAgent 按整点自动轮换；支持本地 Ollama。
+                        </p>
+                        <span class="project-status">Open Source</span>
+                    </div>
+                </a>
+
                 <a href="ClaudeCode架构-交互式.html" target="_blank" class="project-card">
                     <div class="project-preview">
                         <img src="assets/CC截图.png" alt="Claude Code 架构" />
@@ -961,6 +1016,7 @@
                 </a>
             </div>
         </section>
+        </main>
 
         <footer>
             <p class="footer-text">© 2026 杨晓文 · 想做只赚钱不骗钱的产品经理</p>
