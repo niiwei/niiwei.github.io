@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>敲脑壳 MindPop - 类Anki记忆工具</title>
+    <title>小模型后训练与评测体系 - 杨晓文</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -643,11 +643,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="bg-gradient"></div>
 
     <div class="container">
-        <!-- Header -->
         <header>
             <a href="index.html" class="nav-back">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -656,12 +656,11 @@
                 返回
             </a>
             <div class="nav-center">
-                <span class="nav-project">MindPop</span>
+                <span class="nav-project">Post-training</span>
             </div>
             <div class="nav-user">杨晓文 · 想做只赚钱不骗钱的产品经理</div>
         </header>
 
-        <!-- Hero -->
         <section class="hero">
             <div class="hero-content">
                 <div class="hero-badge">
@@ -669,244 +668,197 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                         <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
-                    AI辅助全栈开发项目
+                    后训练 · 评测体系
                 </div>
-                <h1>敲脑壳 <span>MindPop</span></h1>
-                <p class="hero-subtitle">升级版的类 Anki 记忆工具</p>
+                <h1>小模型后训练<span>与评测体系</span></h1>
+                <p class="hero-subtitle">从一个垂类任务，到一套能证伪自己的评测</p>
                 <p class="hero-desc">
-                    解决"学了就忘"的痛点，通过强制主动输出和科学间隔复习，让记忆更加牢固。
+                    把「大模型能做的任务」交给一个能内嵌进产品的小模型。先建可信的度量，再谈训练收益——
+                    因为看不到噪声底，任何提升都只是感觉。
                 </p>
                 <div class="hero-tags">
-                    <span class="hero-tag">Spring Boot</span>
-                    <span class="hero-tag">MySQL</span>
-                    <span class="hero-tag">JWT</span>
-                    <span class="hero-tag">SM-2算法</span>
-                    <span class="hero-tag">AI辅助开发</span>
+                    <span class="hero-tag">MLX-LM</span>
+                    <span class="hero-tag">QLoRA</span>
+                    <span class="hero-tag">FastAPI</span>
+                    <span class="hero-tag">React</span>
+                    <span class="hero-tag">SQLite</span>
+                    <span class="hero-tag">评测设计</span>
                 </div>
                 <div class="hero-links">
-                    <div class="hero-link-wrap">
-                        <a href="https://mindpop.top" target="_blank" class="hero-link primary">
-                            访问项目 →
-                        </a>
-                        <div class="tooltip">
-                            <div class="tooltip-text">账号：<span>test8</span><br>密码：<span>test8</span></div>
-                        </div>
-                    </div>
-                    <a href="https://github.com/niiwei/mindpop" target="_blank" class="hero-link secondary">
-                        GitHub源码
-                    </a>
+                    <a href="mindpop.html" class="hero-link primary">关联项目：敲脑壳 →</a>
                 </div>
             </div>
 
             <div class="logo-card">
                 <div class="logo-wrapper">
-                    <img src="assets/mindpop截图.png" alt="MindPop 截图" class="screenshot-large">
+                    <img src="assets/posttrain.svg" alt="任务示意图：答案正文拆分为 required 与 context" class="screenshot-large">
                 </div>
             </div>
         </section>
 
-        <!-- Articles -->
         <section class="section">
             <div class="section-header">
                 <span class="section-number">01</span>
-                <h2 class="section-title">经验分享</h2>
+                <h2 class="section-title">为什么做它</h2>
                 <div class="section-line"></div>
             </div>
-
-            <div class="articles-list">
-                <a href="https://www.xiaohongshu.com/discovery/item/69a10779000000001a028a33" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding:我在文档管理踩的坑</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-
-                <a href="https://www.xiaohongshu.com/discovery/item/699f1a35000000001a02a016" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding:多一个步骤,省一半时间</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-
-                <a href="https://www.xiaohongshu.com/discovery/item/69a43fd30000000028008d9f" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding:即想即建,即用即弃</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
-
-                <a href="https://www.xiaohongshu.com/discovery/item/69a50bb9000000000e00e3d4" target="_blank" class="article-link">
-                    <div class="article-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        </svg>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-title">文科生自学Vibe Coding: 复旦学新闻的AI思考</div>
-                        <div class="article-source">小红书 · 经验分享</div>
-                    </div>
-                </a>
+            <div class="feature-card full">
+                <ul class="feature-list">
+                    <li>产品需要的能力很明确：用户读完一篇文章，<strong>自动</strong>得到一份可背诵的测验，而不是手动建题。</li>
+                    <li>这个「自动」背后是大模型。但模型要<strong>内嵌在自己的产品里</strong>、<strong>成本由自己承担</strong>，这两个约束倒推出唯一解：小参数、任务专用的模型。</li>
+                    <li>于是问题从「能不能训」变成「<strong>训哪一件事</strong>」——只把一件边界清晰、可客观度量的事交给模型，其余仍由大模型承担。</li>
+                </ul>
             </div>
         </section>
 
-        <!-- Core Features -->
         <section class="section">
             <div class="section-header">
                 <span class="section-number">02</span>
-                <h2 class="section-title">核心功能</h2>
+                <h2 class="section-title">关键取舍：三次收缩选题</h2>
                 <div class="section-line"></div>
             </div>
-
             <div class="cards-grid">
-                <div class="feature-card full">
-                    <div class="feature-icon green">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <path d="M9 9l6 6M15 9l-6 6"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">强制主动输出 - "单框连击"交互</h3>
-                    <ul class="feature-list">
-                        <li>创新交互设计：无需手动提交，输入即匹配</li>
-                        <li>防自我欺骗：只有敲对关键词，答案才会砰然跳出</li>
-                        <li>无序答题：任意顺序回答，无需死记硬背顺序</li>
-                    </ul>
-                </div>
-
                 <div class="feature-card">
-                    <div class="feature-icon blue">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 20V10M18 20V4M6 20v-4"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">科学间隔复习</h3>
-                    <p class="feature-desc">基于 Anki SM-2 算法，在遗忘临界点精准推送复习，对抗遗忘曲线。</p>
+                    <div class="feature-icon">01</div>
+                    <h3 class="feature-title">科普文案 · 已开工后否决</h3>
+                    <p class="feature-desc">
+                        数据已整理完成，但发现科普不只是写作——它牵扯资料调研，以及对结论与规律本身的判断，
+                        已超出一次 SFT 能承担的范围。
+                    </p>
                 </div>
-
                 <div class="feature-card">
-                    <div class="feature-icon purple">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">完整用户系统</h3>
-                    <p class="feature-desc">JWT 无状态认证、BCrypt 密码加密、严格账户数据隔离。</p>
+                    <div class="feature-icon">02</div>
+                    <h3 class="feature-title">脱口秀文案 · 跑通冒烟后否决</h3>
+                    <p class="feature-desc">
+                        几十万字文本，30 步 QLoRA 冒烟流程完整跑通、适配器已保存。
+                        但没有客观评测标准，只能靠人盯着看，训练无法自我迭代。
+                    </p>
                 </div>
-
-                <div class="feature-card full">
-                    <div class="feature-icon accent">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">SM-2 算法核心逻辑</h3>
-                    <div class="code-block">
-<span class="comment">// 新间隔 = 旧间隔 × 简易度系数 × 评级乘数</span>
-<span class="keyword">int</span> newInterval = (<span class="keyword">int</span>) (oldInterval * (easeFactor / <span class="number">1000.0</span>) * ratingMultiplier);
-
-<span class="comment">// 简易度动态调整: 评级好则上升, 差则下降(范围1300-5000)</span>
-<span class="keyword">int</span> newEaseFactor = easeFactor + (rating == <span class="number">4</span> ? <span class="number">150</span> : (rating == <span class="number">1</span> ? -<span class="number">250</span> : <span class="number">0</span>));
-                    </div>
+                <div class="feature-card">
+                    <div class="feature-icon">03</div>
+                    <h3 class="feature-title">答案拆分 · 收敛</h3>
+                    <p class="feature-desc">
+                        最终只取全流程最后一环：把已经写好的答案正文划成「必答关键词 / 补充语境」。
+                        任务清晰、可量化、数据可获取，且能直接回灌到自己的产品。
+                    </p>
                 </div>
+            </div>
+            <div class="feature-card full" style="margin-top:16px">
+                <p class="feature-desc" style="margin:0">
+                    这次收敛的标准不是「哪个任务更有意思」，而是<strong>「哪个任务能被客观度量，并且我真的会用」</strong>。
+                </p>
             </div>
         </section>
 
-        <!-- Technical Stack -->
         <section class="section">
             <div class="section-header">
                 <span class="section-number">03</span>
-                <h2 class="section-title">技术架构</h2>
+                <h2 class="section-title">评测体系</h2>
                 <div class="section-line"></div>
             </div>
-
-            <div class="cards-grid">
-                <div class="feature-card">
-                    <h3 class="feature-title">后端架构</h3>
-                    <p class="feature-desc">经典三层架构：Controller → Service → Repository → Entity</p>
-                    <ul class="feature-list">
-                        <li>Spring Boot 2.7.18</li>
-                        <li>Spring Data JPA + Hibernate</li>
-                        <li>MySQL 8.0</li>
-                        <li>JWT (JJWT) + Spring Security</li>
-                        <li>Docker + 阿里云部署</li>
-                    </ul>
+            <div class="articles-list">
+                <div class="article-link">
+                    <div class="article-icon">σ</div>
+                    <div class="article-content">
+                        <div class="article-title">先量噪声底，再解释分数</div>
+                        <div class="article-source">
+                            同提示词、同模型连跑两次，F1 波动 0.0125，33 条里只有 24 条预测相同。
+                            由此定下判据：<strong>1.3 个点以内的差异不作结论</strong>。
+                        </div>
+                    </div>
                 </div>
-
-                <div class="feature-card">
-                    <h3 class="feature-title">数据库核心表</h3>
-                    <ul class="feature-list">
-                        <li>users - 用户表（BCrypt加密）</li>
-                        <li>quiz - 测验主表</li>
-                        <li>answer - 答案表</li>
-                        <li>quiz_group - 分组表（多对多）</li>
-                        <li>quiz_review_status - SM-2核心数据</li>
-                    </ul>
+                <div class="article-link">
+                    <div class="article-icon">n</div>
+                    <div class="article-content">
+                        <div class="article-title">用统计功效倒推测试集规模</div>
+                        <div class="article-source">
+                            基于逐样本 F1 做 bootstrap：50 条只能检出 ±9 点，而目标提升是 3–8 点。
+                            测试集规划因此从 50 条改为 <strong>400–800 条</strong>，并采用配对比较。
+                        </div>
+                    </div>
                 </div>
-
-                <div class="feature-card full">
-                    <h3 class="feature-title">评级体系</h3>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>评级</th>
-                                    <th>说明</th>
-                                    <th>间隔乘数</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><span style="color: var(--red)">重来</span></td>
-                                    <td>完全忘记，需要重新学习</td>
-                                    <td>× 间隔衰减</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="color: var(--orange)">困难</span></td>
-                                    <td>有印象但回忆困难</td>
-                                    <td>× 1.2</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="color: var(--green)">良好</span></td>
-                                    <td>正确回忆，稍有犹豫</td>
-                                    <td>× ease factor</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="color: var(--blue)">简单</span></td>
-                                    <td>轻松回忆，正确无误</td>
-                                    <td>× ease factor × 1.3</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="article-link">
+                    <div class="article-icon">✓</div>
+                    <div class="article-content">
+                        <div class="article-title">人工金标不可变</div>
+                        <div class="article-source">
+                            人工只需为开发集定标一次，固化为不可变金标（内容哈希去重、版本递增）；
+                            重跑不覆盖金标，修订需显式确认并保留全部历史分数。
+                        </div>
+                    </div>
+                </div>
+                <div class="article-link">
+                    <div class="article-icon">!</div>
+                    <div class="article-content">
+                        <div class="article-title">发现评分口径把自己骗了</div>
+                        <div class="article-source">
+                            自动评分一度误用旧格式，同一批样本被算成虚高分数。
+                            修正后补上回归测试——<strong>评测代码本身也要被评测</strong>。
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Footer -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2 class="section-title">工程实现</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="cards-grid">
+                <div class="feature-card">
+                    <h3 class="feature-title">数据分层</h3>
+                    <ul class="feature-list">
+                        <li>source（不可变原件 + SHA-256 清单）</li>
+                        <li>canonical / annotations / exports / reports</li>
+                        <li>生成物必须能由脚本重建</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3 class="feature-title">结构化输出</h3>
+                    <ul class="feature-list">
+                        <li>教师模型只返回 span 的起止位置</li>
+                        <li>后端从原文确定性重建标签</li>
+                        <li>教师无法复制或改写正文</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3 class="feature-title">确定性后校验</h3>
+                    <ul class="feature-list">
+                        <li>拒绝切断 Markdown / skill.md / llms.txt</li>
+                        <li>固定 ASCII 标识符不可从中间切开</li>
+                        <li>越界、空范围、乱序、重叠均记为样本错误</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3 class="feature-title">标注工作台</h3>
+                    <ul class="feature-list">
+                        <li>FastAPI + React + SQLite 六阶段流程</li>
+                        <li>后端 74 / 前端 8 项测试通过</li>
+                        <li>SSE 卡死修复：快照耗时约 10.1s → 0.31s</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2 class="section-title">当前进度与边界</h2>
+                <div class="section-line"></div>
+            </div>
+            <div class="feature-card full">
+                <ul class="feature-list">
+                    <li><strong>已完成：</strong>数据准备与分层、出题与标注提示词迭代、不可变金标与自动评分、技术探针（适配器已保存并校验）。</li>
+                    <li><strong>进行中：</strong>冻结训练 / 验证 / 测试划分（按来源文章隔离），随后跑底座基线，再启动正式 LoRA 训练并做配对比较。</li>
+                    <li><strong>诚实边界：</strong>目前<strong>没有任何模型质量结论</strong>。已有的 F1 全部是教师模型在开发集上相对人工金标的表现，不能当作训练收益。开发集同时充当迭代集，其上的分数存在过拟合风险。</li>
+                </ul>
+            </div>
+        </section>
+
         <footer>
-            <p class="footer-text">© 2026 MindPop · 基于 AI 辅助开发</p>
+            <p class="footer-text">© 2026 杨晓文 · 后训练与评测体系</p>
         </footer>
     </div>
 </body>

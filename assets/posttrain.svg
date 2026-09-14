@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="小模型后训练与评测体系">
+  <defs>
+    <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#0f0f0f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c9a66b"/>
+      <stop offset="100%" stop-color="#e0c28c"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#242424" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#pg)"/>
+  <rect width="800" height="500" fill="url(#grid)" opacity="0.55"/>
+  <rect x="0.5" y="0.5" width="799" height="499" fill="none" stroke="#2a2a2a"/>
+
+  <!-- 顶部标签 -->
+  <text x="56" y="72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="15" letter-spacing="3" fill="#8a8a8a">POST-TRAINING</text>
+  <line x1="56" y1="90" x2="744" y2="90" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- 任务示意：required / context -->
+  <text x="56" y="140" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="14" fill="#6f6f6f">任务：答案正文 → required / context 划分</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20">
+    <rect x="56" y="168" width="86" height="46" rx="9" fill="#202020" stroke="#333"/>
+    <text x="99" y="198" text-anchor="middle" fill="#8a8a8a">发布</text>
+
+    <rect x="152" y="168" width="150" height="46" rx="9" fill="url(#gold)"/>
+    <text x="227" y="198" text-anchor="middle" fill="#141414" font-weight="600">llms.txt</text>
+
+    <rect x="312" y="168" width="150" height="46" rx="9" fill="#202020" stroke="#333"/>
+    <text x="387" y="198" text-anchor="middle" fill="#8a8a8a">文档索引</text>
+  </g>
+
+  <text x="56" y="248" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="13" fill="#5f5f5f">金色 = 必答关键词（required）　灰色 = 补充语境（context）</text>
+
+  <line x1="56" y1="280" x2="744" y2="280" stroke="#2a2a2a" stroke-width="1"/>
+
+  <!-- 评测：噪声底 -->
+  <text x="56" y="322" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="14" fill="#6f6f6f">先量噪声底，再解释分数</text>
+
+  <g>
+    <rect x="56" y="342" width="688" height="70" rx="10" fill="#161616" stroke="#262626"/>
+    <!-- 噪声带 -->
+    <rect x="76" y="360" width="648" height="34" fill="#c9a66b" opacity="0.07"/>
+    <line x1="76" y1="377" x2="724" y2="377" stroke="#c9a66b" stroke-width="1.5"
+          stroke-dasharray="7 5" opacity="0.8"/>
+    <text x="80" y="371" font-family="ui-monospace, Menlo, monospace" font-size="12"
+          fill="#c9a66b" opacity="0.9">复现噪声底　F1 波动 0.0125</text>
+  </g>
+
+  <text x="56" y="452" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="13" fill="#5f5f5f">1.3 个点以内的差异不作结论</text>
+
+  <text x="744" y="452" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+        font-size="13" fill="#3f3f3f">MLX-LM · QLoRA · FastAPI · SQLite</text>
+</svg>
